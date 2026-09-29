@@ -1,0 +1,18 @@
+{% extends "layouts/base.html" %}
+{% block title %}Mis solicitudes de nómina{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <h1 class="section-title mb-4">Mis solicitudes de nómina</h1>
+  {% for solicitud in solicitudes %}
+    <div class="product-card p-4 mb-3">
+      <div class="row align-items-center g-3">
+        <div class="col-md-3"><strong>Solicitud #{{ solicitud.id }}</strong><div class="small text-muted">{{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</div></div>
+        <div class="col-md-3">{{ solicitud.fondo.nombre }}<div class="small text-muted">{{ solicitud.pedido.numero|default:"Sin pedido" }}</div></div>
+        <div class="col-md-2"><span class="badge text-bg-secondary">{{ solicitud.get_estado_display }}</span></div>
+        <div class="col-md-2 price">${{ solicitud.valor_solicitado|floatformat:0 }}</div>
+        <div class="col-md-2 text-md-end"><a class="btn btn-outline-secondary" href="{% url 'fondos:detalle_solicitud' solicitud.id %}">Ver detalle</a></div>
+      </div>
+    </div>
+  {% empty %}<div class="alert alert-info">Aún no tienes solicitudes.</div>{% endfor %}
+</div></section>
+{% endblock %}

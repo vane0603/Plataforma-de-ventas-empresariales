@@ -1,0 +1,59 @@
+{% extends "layouts/base.html" %}
+{% block title %}Finalizar compra | Tío Campo Commerce{% endblock %}
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="mb-4">
+      <span style="color:var(--dorado);font-weight:600;">CHECKOUT</span>
+      <h1 class="section-title mt-2">Finaliza tu compra</h1>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <form method="post" class="product-card p-4">
+          {% csrf_token %}
+          <h4 class="section-title mb-4">Datos de entrega</h4>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Dirección de entrega</label>
+            <input type="text" name="direccion_entrega" class="form-control form-control-lg" required value="{{ request.POST.direccion_entrega|default:'' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ciudad</label>
+            <input type="text" name="ciudad" class="form-control form-control-lg" required value="{{ request.POST.ciudad|default:'Bogotá' }}">
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="3">{{ request.POST.observaciones|default:'' }}</textarea>
+          </div>
+          <h4 class="section-title mb-3">Medio de pago</h4>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="metodo_pago" id="pagoElectronico" value="ELECTRONICO" required>
+            <label class="form-check-label" for="pagoElectronico"><strong>Pago electrónico</strong><div class="small text-muted">Quedará pendiente hasta conectar la pasarela de pagos.</div></label>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="metodo_pago" id="pagoOtro" value="OTRO">
+            <label class="form-check-label" for="pagoOtro"><strong>Otro medio de pago</strong></label>
+          </div>
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="radio" name="metodo_pago" id="pagoNomina" value="NOMINA">
+            <label class="form-check-label" for="pagoNomina"><strong>Descuento por nómina</strong><div class="small text-muted">Después diligenciarás los datos que se enviarán al fondo de empleados.</div></label>
+          </div>
+          <button type="submit" class="btn btn-tio btn-lg w-100">Continuar <i class="bi bi-arrow-right ms-2"></i></button>
+        </form>
+      </div>
+      <div class="col-lg-4">
+        <div class="product-card p-4" style="position:sticky;top:20px;">
+          <h4 class="section-title mb-4">Resumen</h4>
+          {% for item in items %}
+            <div class="d-flex justify-content-between gap-3 mb-3">
+              <div><strong>{{ item.presentacion.producto.nombre }}</strong><div class="small text-muted">{{ item.presentacion.presentacion.nombre }} · {{ item.cantidad }} x ${{ item.precio_unitario|floatformat:0 }}</div></div>
+              <strong>${{ item.subtotal|floatformat:0 }}</strong>
+            </div>
+          {% endfor %}
+          <hr>
+          <div class="d-flex justify-content-between"><span class="fw-semibold">Total</span><span class="price">${{ total|floatformat:0 }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

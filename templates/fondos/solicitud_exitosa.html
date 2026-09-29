@@ -1,0 +1,214 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+    Solicitud enviada | Tío Campo Commerce
+{% endblock %}
+
+
+{% block content %}
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div
+            class="text-center product-card p-5"
+            style="
+                max-width: 800px;
+                margin: auto;
+            "
+        >
+
+            <i
+                class="bi bi-check-circle-fill"
+                style="
+                    font-size: 5rem;
+                    color: var(--verde-principal);
+                "
+            ></i>
+
+
+            <h1 class="mt-4">
+
+                ¡Solicitud enviada!
+
+            </h1>
+
+
+            <p class="text-muted mt-3">
+
+                Tu solicitud de descuento por nómina
+                fue enviada correctamente al fondo
+                de empleados.
+
+            </p>
+
+
+            <!-- NUMERO -->
+
+            <div
+                class="p-4 rounded-4 mt-4"
+                style="
+                    background: var(--crema);
+                "
+            >
+
+                <small class="text-muted">
+                    Número de solicitud
+                </small>
+
+                <h2
+                    class="mt-2"
+                    style="
+                        color: var(--verde-principal);
+                    "
+                >
+                    #{{ solicitud.id }}
+                </h2>
+
+            </div>
+
+
+            <!-- INFORMACIÓN -->
+
+            <div class="row g-3 mt-4 text-start">
+
+
+                <div class="col-md-6">
+
+                    <div class="p-3 rounded-4 bg-light">
+
+                        <small class="text-muted">
+                            Fondo
+                        </small>
+
+                        <div class="fw-semibold mt-1">
+                            {{ solicitud.fondo.nombre }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <div class="p-3 rounded-4 bg-light">
+
+                        <small class="text-muted">
+                            Valor solicitado
+                        </small>
+
+                        <div class="fw-semibold mt-1">
+
+                            ${{ solicitud.valor_solicitado|floatformat:0 }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <div class="p-3 rounded-4 bg-light">
+
+                        <small class="text-muted">
+                            Estado
+                        </small>
+
+                        <div class="mt-2">
+
+                            <span
+                                class="badge rounded-pill"
+                                style="
+                                    background: var(--dorado);
+                                    color: white;
+                                "
+                            >
+                                {{ solicitud.get_estado_display }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MENSAJE -->
+
+            <div
+                class="alert mt-4 text-start"
+                style="
+                    background: var(--crema);
+                    border: none;
+                "
+            >
+
+                <strong>
+                    ¿Qué sigue?
+                </strong>
+
+                <p class="mb-0 mt-2">
+
+                    El fondo revisará tu solicitud y
+                    podrá aprobarla, aprobarla parcialmente
+                    o rechazarla.
+
+                    Si la aprobación es parcial, se mostrará
+                    el valor aprobado y el cupo disponible
+                    informado por el fondo.
+
+                </p>
+
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div
+                class="
+                    d-flex
+                    justify-content-center
+                    flex-wrap
+                    gap-3
+                    mt-4
+                "
+            >
+
+                <a
+                    href="{% url 'carrito:detalle' %}"
+                    class="btn btn-outline-secondary rounded-pill px-4"
+                >
+
+                    <i class="bi bi-cart me-2"></i>
+
+                    Ver carrito
+
+                </a>
+
+
+                <a
+                    href="{% url 'productos:lista' %}"
+                    class="btn btn-tio rounded-pill px-4"
+                >
+
+                    <i class="bi bi-grid me-2"></i>
+
+                    Ver catálogo
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

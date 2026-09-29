@@ -1,0 +1,18 @@
+{% extends "layouts/base.html" %}
+{% block title %}Pedido {{ pedido.numero }}{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <div class="product-card p-4 p-md-5">
+    <h1 class="section-title">Pedido {{ pedido.numero }}</h1>
+    <p class="text-muted">Estado: <strong>{{ pedido.get_estado_display }}</strong> · Medio de pago: {{ pedido.get_metodo_pago_display }}</p>
+    <div class="table-responsive mt-4"><table class="table align-middle">
+      <thead><tr><th>Producto</th><th>Presentación</th><th>Cantidad</th><th class="text-end">Subtotal</th></tr></thead>
+      <tbody>{% for item in pedido.items.all %}<tr><td>{{ item.producto_nombre }}</td><td>{{ item.presentacion }}</td><td>{{ item.cantidad }}</td><td class="text-end">${{ item.subtotal|floatformat:0 }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <div class="text-end fs-4"><strong>Total: ${{ pedido.total|floatformat:0 }}</strong></div>
+    {% if pedido.metodo_pago == 'NOMINA' and pedido.estado == 'PEND_SOL_NOMINA' %}
+      <a class="btn btn-tio mt-4" href="{% url 'fondos:solicitar_descuento_nomina' pedido.id %}">Completar solicitud de nómina</a>
+    {% endif %}
+  </div>
+</div></section>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+{% block title %}Revisar solicitud #{{ solicitud.id }}{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="product-card p-4">
+        <h1 class="section-title">Solicitud #{{ solicitud.id }}</h1>
+        <div class="row g-3 mt-1">
+          <div class="col-md-6"><small class="text-muted">Solicitante</small><div class="fw-semibold">{{ solicitud.nombre_completo }}</div></div>
+          <div class="col-md-6"><small class="text-muted">Documento</small><div class="fw-semibold">{{ solicitud.documento }}</div></div>
+          <div class="col-md-6"><small class="text-muted">Empresa</small><div>{{ solicitud.empresa }}</div></div>
+          <div class="col-md-6"><small class="text-muted">Número afiliado</small><div>{{ solicitud.numero_afiliado|default:"No informado" }}</div></div>
+          <div class="col-md-6"><small class="text-muted">Correo</small><div>{{ solicitud.correo|default:"No informado" }}</div></div>
+          <div class="col-md-6"><small class="text-muted">Teléfono</small><div>{{ solicitud.telefono|default:"No informado" }}</div></div>
+        </div>
+        <h4 class="section-title mt-4">Productos</h4>
+        {% if solicitud.pedido %}
+          <div class="table-responsive"><table class="table"><thead><tr><th>Producto</th><th>Cant.</th><th class="text-end">Subtotal</th></tr></thead><tbody>
+            {% for item in solicitud.pedido.items.all %}<tr><td>{{ item.producto_nombre }}<div class="small text-muted">{{ item.presentacion }}</div></td><td>{{ item.cantidad }}</td><td class="text-end">${{ item.subtotal|floatformat:0 }}</td></tr>{% endfor %}
+          </tbody></table></div>
+        {% endif %}
+        <div class="text-end fs-4"><strong>Solicitado: ${{ solicitud.valor_solicitado|floatformat:0 }}</strong></div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <form method="post" class="product-card p-4">
+        {% csrf_token %}<h4 class="section-title mb-3">Respuesta del fondo</h4>
+        {% for field in form %}<div class="mb-3"><label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}
+        <button type="submit" class="btn btn-tio w-100">Guardar respuesta</button>
+      </form>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

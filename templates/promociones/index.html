@@ -1,0 +1,276 @@
+{% extends "layouts/base.html" %}
+
+
+{% block title %}
+    Promociones | Tío Campo Commerce
+{% endblock %}
+
+
+{% block content %}
+
+<section class="py-5">
+
+    <div class="container">
+
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+
+        <div class="text-center mb-5">
+
+            <span
+                style="
+                    color: var(--dorado);
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                "
+            >
+                PROMOCIONES
+            </span>
+
+
+            <h1 class="section-title mt-2">
+
+                Combos especiales
+
+            </h1>
+
+
+            <p class="text-muted">
+
+                Encuentra nuestras mejores combinaciones
+                a precios especiales.
+
+            </p>
+
+        </div>
+
+
+        <!-- =====================================================
+             COMBOS
+        ====================================================== -->
+
+        <div class="row g-4">
+
+            {% for combo in combos %}
+
+                <div class="col-12 col-md-6 col-lg-4">
+
+                    <div class="product-card h-100">
+
+
+                        <!-- IMAGEN -->
+
+                        {% if combo.imagen %}
+
+                            <div class="product-image-container">
+
+                                <img
+                                    src="{{ combo.imagen.url }}"
+                                    alt="{{ combo.nombre }}"
+                                >
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="
+                                    product-image-container
+                                    d-flex
+                                    align-items-center
+                                    justify-content-center
+                                "
+                            >
+
+                                <i
+                                    class="bi bi-box-seam"
+                                    style="
+                                        font-size:4rem;
+                                        color:var(--dorado);
+                                    "
+                                ></i>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- INFORMACIÓN -->
+
+                        <div class="p-4">
+
+
+                            {% if combo.destacado %}
+
+                                <span
+                                    class="badge rounded-pill mb-2"
+                                    style="
+                                        background:var(--dorado);
+                                        color:var(--blanco);
+                                    "
+                                >
+                                    DESTACADO
+                                </span>
+
+                            {% endif %}
+
+
+                            <small
+                                class="d-block"
+                                style="
+                                    color:var(--dorado);
+                                    font-weight:600;
+                                "
+                            >
+
+                                COMBO
+
+                            </small>
+
+
+                            <h4 class="mt-2">
+
+                                {{ combo.nombre }}
+
+                            </h4>
+
+
+                            {% if combo.descripcion %}
+
+                                <p class="text-muted">
+
+                                    {{ combo.descripcion|truncatechars:110 }}
+
+                                </p>
+
+                            {% endif %}
+
+
+                            <!-- PRECIO -->
+
+                            {% if combo.precio_anterior %}
+
+                                <div
+                                    class="text-muted"
+                                    style="
+                                        text-decoration:line-through;
+                                    "
+                                >
+
+                                    ${{ combo.precio_anterior|floatformat:0 }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="price">
+
+                                ${{ combo.precio|floatformat:0 }}
+
+                            </div>
+
+
+                            <!-- PRODUCTOS -->
+
+                            <div class="mt-3">
+
+                                <small
+                                    class="fw-semibold"
+                                    style="
+                                        color:var(--verde-principal);
+                                    "
+                                >
+
+                                    Incluye:
+
+                                </small>
+
+
+                                <ul class="small text-muted mt-2 mb-0">
+
+                                    {% for item in combo.productos.all|slice:":4" %}
+
+                                        <li>
+
+                                            {{ item.cantidad }}
+                                            x
+                                            {{ item.producto.nombre }}
+
+                                        </li>
+
+                                    {% endfor %}
+
+                                </ul>
+
+                            </div>
+
+
+                            <!-- BOTÓN -->
+
+                            <a
+                                href="{% url 'promociones:detalle' combo.id %}"
+                                class="btn btn-tio w-100 mt-4"
+                            >
+
+                                <i
+                                    class="bi bi-eye me-2"
+                                ></i>
+
+                                Ver combo
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="col-12">
+
+                    <div
+                        class="text-center p-5 product-card"
+                    >
+
+                        <i
+                            class="bi bi-gift"
+                            style="
+                                font-size:4rem;
+                                color:var(--dorado);
+                            "
+                        ></i>
+
+
+                        <h3 class="mt-4">
+
+                            Próximamente
+
+                        </h3>
+
+
+                        <p class="text-muted">
+
+                            Estamos preparando nuestros
+                            combos y promociones especiales.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

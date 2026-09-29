@@ -1,0 +1,26 @@
+{% extends "layouts/base.html" %}
+{% block title %}Solicitud #{{ solicitud.id }}{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <div class="product-card p-4 p-md-5">
+    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
+      <div><h1 class="section-title mb-1">Solicitud #{{ solicitud.id }}</h1><div class="text-muted">{{ solicitud.fondo.nombre }} · {{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</div></div>
+      <span class="badge text-bg-secondary fs-6">{{ solicitud.get_estado_display }}</span>
+    </div>
+    <hr class="my-4">
+    <div class="row g-3">
+      <div class="col-md-4"><small class="text-muted">Valor solicitado</small><div class="fs-5 fw-bold">${{ solicitud.valor_solicitado|floatformat:0 }}</div></div>
+      <div class="col-md-4"><small class="text-muted">Valor aprobado</small><div class="fs-5 fw-bold">{% if solicitud.valor_aprobado != None %}${{ solicitud.valor_aprobado|floatformat:0 }}{% else %}Pendiente{% endif %}</div></div>
+      <div class="col-md-4"><small class="text-muted">Cupo reportado</small><div class="fs-5 fw-bold">{% if solicitud.cupo_disponible_reportado != None %}${{ solicitud.cupo_disponible_reportado|floatformat:0 }}{% else %}Pendiente{% endif %}</div></div>
+      <div class="col-md-4"><small class="text-muted">Vinculación validada</small><div>{% if solicitud.vinculacion_validada == True %}Sí{% elif solicitud.vinculacion_validada == False %}No{% else %}Pendiente{% endif %}</div></div>
+      <div class="col-md-8"><small class="text-muted">Respuesta del fondo</small><div>{{ solicitud.respuesta_fondo|default:"Pendiente de respuesta." }}</div></div>
+    </div>
+    {% if solicitud.pedido %}
+      <h4 class="section-title mt-5">Productos del pedido {{ solicitud.pedido.numero }}</h4>
+      <div class="table-responsive"><table class="table"><thead><tr><th>Producto</th><th>Presentación</th><th>Cantidad</th><th class="text-end">Subtotal</th></tr></thead><tbody>
+        {% for item in solicitud.pedido.items.all %}<tr><td>{{ item.producto_nombre }}</td><td>{{ item.presentacion }}</td><td>{{ item.cantidad }}</td><td class="text-end">${{ item.subtotal|floatformat:0 }}</td></tr>{% endfor %}
+      </tbody></table></div>
+    {% endif %}
+  </div>
+</div></section>
+{% endblock %}

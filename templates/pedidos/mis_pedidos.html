@@ -1,0 +1,15 @@
+{% extends "layouts/base.html" %}
+{% block title %}Mis pedidos{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <h1 class="section-title mb-4">Mis pedidos</h1>
+  {% for pedido in pedidos %}
+    <div class="product-card p-4 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div><strong>{{ pedido.numero }}</strong><div class="text-muted small">{{ pedido.created_at|date:"d/m/Y H:i" }} · {{ pedido.get_metodo_pago_display }}</div></div>
+      <div><span class="badge text-bg-secondary">{{ pedido.get_estado_display }}</span></div>
+      <div class="price">${{ pedido.total|floatformat:0 }}</div>
+      <a class="btn btn-outline-secondary" href="{% url 'pedidos:confirmacion' pedido.id %}">Ver</a>
+    </div>
+  {% empty %}<div class="alert alert-info">Aún no tienes pedidos.</div>{% endfor %}
+</div></section>
+{% endblock %}

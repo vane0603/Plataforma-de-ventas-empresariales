@@ -1,0 +1,1051 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+            Tío Campo Commerce
+        {% endblock %}
+    </title>
+
+
+    <!-- =====================================================
+         BOOTSTRAP
+    ====================================================== -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         BOOTSTRAP ICONS
+    ====================================================== -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         GOOGLE FONTS
+    ====================================================== -->
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         ESTILOS CORPORATIVOS
+    ====================================================== -->
+
+    <style>
+
+        :root {
+
+            /* ==============================
+               VERDES
+            ============================== */
+
+            --verde-principal: #0B4D2C;
+            --verde-secundario: #1D6B3A;
+            --verde-claro: #4C9A5A;
+
+
+            /* ==============================
+               AZULES
+            ============================== */
+
+            --azul: #173B73;
+            --azul-claro: #295EA8;
+
+
+            /* ==============================
+               DORADOS
+            ============================== */
+
+            --dorado: #C79A2B;
+            --dorado-claro: #E5BF58;
+
+
+            /* ==============================
+               CREMA
+            ============================== */
+
+            --crema: #F7F3E9;
+
+
+            /* ==============================
+               BLANCOS
+            ============================== */
+
+            --blanco: #FFFFFF;
+
+
+            /* ==============================
+               GRISES
+            ============================== */
+
+            --gris: #666666;
+            --gris-claro: #EFEFEF;
+
+
+            /* ==============================
+               SOMBRA
+            ============================== */
+
+            --sombra: 0 12px 30px rgba(0, 0, 0, 0.12);
+
+        }
+
+
+        /* =====================================================
+           CONFIGURACIÓN GENERAL
+        ====================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            padding: 0;
+
+            font-family: 'Poppins', sans-serif;
+
+            background-color: var(--crema);
+
+            color: #333;
+
+        }
+
+
+        a {
+            text-decoration: none;
+        }
+
+
+        img {
+            max-width: 100%;
+        }
+
+
+        /* =====================================================
+           NAVBAR
+        ====================================================== */
+
+        .navbar-custom {
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--verde-principal),
+                    var(--azul)
+                );
+
+            box-shadow: var(--sombra);
+
+            padding: 15px 0;
+
+        }
+
+
+        .navbar-custom .navbar-brand {
+
+            color: var(--blanco) !important;
+
+            font-family: 'Playfair Display', serif;
+
+            font-size: 30px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.3px;
+
+        }
+
+
+        .navbar-custom .nav-link {
+
+            color: var(--blanco) !important;
+
+            font-weight: 500;
+
+            margin-left: 6px;
+
+            transition: all 0.3s ease;
+
+        }
+
+
+        .navbar-custom .nav-link:hover {
+
+            color: var(--dorado-claro) !important;
+
+        }
+
+
+        /* =====================================================
+           BOTÓN CARRITO
+        ====================================================== */
+
+        .btn-carrito {
+
+            background-color: var(--blanco);
+
+            color: var(--verde-principal);
+
+            border: none;
+
+            border-radius: 30px;
+
+            padding: 9px 18px;
+
+            font-weight: 600;
+
+            transition: all 0.3s ease;
+
+        }
+
+
+        .btn-carrito:hover {
+
+            background-color: var(--dorado);
+
+            color: var(--blanco);
+
+        }
+
+
+        /* =====================================================
+           BOTÓN PRINCIPAL
+        ====================================================== */
+
+        .btn-tio {
+
+            background-color: var(--dorado);
+
+            color: var(--blanco);
+
+            border: none;
+
+            border-radius: 30px;
+
+            padding: 12px 25px;
+
+            font-weight: 600;
+
+            transition: all 0.3s ease;
+
+        }
+
+
+        .btn-tio:hover {
+
+            background-color: var(--verde-principal);
+
+            color: var(--blanco);
+
+        }
+
+
+        /* =====================================================
+           HERO
+        ====================================================== */
+
+        .hero {
+
+            padding: 80px 0;
+
+        }
+
+
+        .hero-title {
+
+            font-family: 'Playfair Display', serif;
+
+            color: var(--verde-principal);
+
+            font-size: 3.5rem;
+
+            font-weight: 700;
+
+        }
+
+
+        .hero-subtitle {
+
+            color: var(--gris);
+
+            font-size: 1.1rem;
+
+            line-height: 1.7;
+
+        }
+
+
+        /* =====================================================
+           TÍTULOS
+        ====================================================== */
+
+        .section-title {
+
+            color: var(--verde-principal);
+
+            font-weight: 700;
+
+        }
+
+
+        /* =====================================================
+           TARJETAS
+        ====================================================== */
+
+        .product-card {
+
+            border: none;
+
+            border-radius: 20px;
+
+            background-color: var(--blanco);
+
+            box-shadow: var(--sombra);
+
+            transition: all 0.3s ease;
+
+            overflow: hidden;
+
+        }
+
+
+        .product-card:hover {
+
+            transform: translateY(-7px);
+
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, 0.16);
+
+        }
+
+
+        /* =====================================================
+           IMÁGENES DE TARJETAS
+        ====================================================== */
+
+        .product-card img {
+
+            width: 100%;
+
+            height: 230px;
+
+            object-fit: contain;
+
+            object-position: center;
+
+            background-color: var(--blanco);
+
+            padding: 12px;
+
+            display: block;
+
+        }
+
+
+        /* =====================================================
+           CONTENEDOR DE IMAGEN DE PRODUCTO
+        ====================================================== */
+
+        .product-image-container {
+
+            width: 100%;
+
+            height: 230px;
+
+            background-color: var(--blanco);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            overflow: hidden;
+
+            padding: 10px;
+
+        }
+
+
+        .product-image-container img {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: contain;
+
+            object-position: center;
+
+            display: block;
+
+        }
+
+
+        /* =====================================================
+           IMAGEN GRANDE DE DETALLE
+        ====================================================== */
+
+        .product-detail-image {
+
+            width: 100%;
+
+            height: 500px;
+
+            object-fit: contain;
+
+            object-position: center;
+
+            background-color: var(--blanco);
+
+            padding: 20px;
+
+            display: block;
+
+        }
+
+
+        /* =====================================================
+           INFORMACIÓN DE PRODUCTO
+        ====================================================== */
+
+        .product-info-description {
+
+            padding-right: 20px;
+
+        }
+
+
+        .product-info-description p {
+
+            font-size: 1rem;
+
+            line-height: 1.9;
+
+        }
+
+
+        .product-info-panel {
+
+            color: #222;
+
+        }
+
+
+        .product-info-item {
+
+            line-height: 1.7;
+
+        }
+
+
+        .product-info-item strong {
+
+            color: #111;
+
+            margin-right: 5px;
+
+        }
+
+
+        .product-info-item span {
+
+            color: #333;
+
+        }
+
+
+        /* =====================================================
+           SELECTOR DE PRESENTACIÓN
+        ====================================================== */
+
+        .form-select {
+
+            border-color: #d8d8d8;
+
+        }
+
+
+        .form-select:focus {
+
+            border-color: var(--verde-principal);
+
+            box-shadow:
+                0 0 0 0.2rem rgba(11, 77, 44, 0.15);
+
+        }
+
+
+        /* =====================================================
+           PRECIO
+        ====================================================== */
+
+        .price {
+
+            color: var(--verde-principal);
+
+            font-size: 1.5rem;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .footer-custom {
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--verde-principal),
+                    var(--azul)
+                );
+
+            color: var(--blanco);
+
+            margin-top: 70px;
+
+            padding: 50px 0;
+
+        }
+
+
+        .footer-custom h5 {
+
+            color: var(--dorado-claro);
+
+            font-weight: 700;
+
+        }
+
+
+        .footer-custom a {
+
+            color: var(--blanco);
+
+        }
+
+
+        .footer-custom a:hover {
+
+            color: var(--dorado-claro);
+
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ====================================================== */
+
+        @media (max-width: 992px) {
+
+            .navbar-custom .nav-link {
+
+                margin-left: 0;
+
+                padding: 10px 0;
+
+            }
+
+
+            .navbar-custom .btn-carrito {
+
+                margin-top: 10px;
+
+            }
+
+
+            .product-detail-image {
+
+                height: 400px;
+
+            }
+
+        }
+
+
+        @media (max-width: 768px) {
+
+            .hero-title {
+
+                font-size: 2.5rem;
+
+            }
+
+
+            .navbar-custom .navbar-brand {
+
+                font-size: 24px;
+
+            }
+
+
+            .product-detail-image {
+
+                height: 350px;
+
+            }
+
+
+            .product-info-description {
+
+                padding-right: 0;
+
+            }
+
+        }
+
+
+        @media (max-width: 576px) {
+
+            .product-detail-image {
+
+                height: 300px;
+
+                padding: 10px;
+
+            }
+
+
+            .product-card img,
+            .product-image-container {
+
+                height: 200px;
+
+            }
+
+        }
+
+    </style>
+
+
+    {% block css %}
+    {% endblock %}
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR PRINCIPAL
+====================================================== -->
+
+<nav class="navbar navbar-expand-lg navbar-custom">
+
+    <div class="container">
+
+
+        <!-- =================================================
+             LOGO / MARCA
+        ================================================== -->
+
+        <a
+            class="navbar-brand"
+            href="/"
+        >
+            Tío Campo
+        </a>
+
+
+        <!-- =================================================
+             BOTÓN MENÚ MÓVIL
+        ================================================== -->
+
+        <button
+            class="navbar-toggler bg-light"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuPrincipal"
+            aria-controls="menuPrincipal"
+            aria-expanded="false"
+            aria-label="Abrir menú"
+        >
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <!-- =================================================
+             MENÚ
+        ================================================== -->
+
+        <div
+            class="collapse navbar-collapse"
+            id="menuPrincipal"
+        >
+
+            <ul
+                class="navbar-nav ms-auto align-items-lg-center gap-lg-2"
+            >
+
+
+                <!-- INICIO -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="/"
+                    >
+                        Inicio
+                    </a>
+
+                </li>
+
+
+                <!-- PRODUCTOS -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'productos:lista' %}"
+                    >
+                        Productos
+                    </a>
+
+                </li>
+
+
+                <!-- LÁCTEOS -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'productos:categoria' 1 %}"
+                    >
+                        Lácteos
+                    </a>
+
+                </li>
+
+
+                <!-- CÁRNICOS -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'productos:categoria' 2 %}"
+                    >
+                        Cárnicos
+                    </a>
+
+                </li>
+
+
+                <!-- PANADERÍA -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'productos:categoria' 3 %}"
+                    >
+                        Panadería
+                    </a>
+
+                </li>
+
+
+                <!-- SNACKS -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'productos:categoria' 4 %}"
+                    >
+                        Snacks
+                    </a>
+
+                </li>
+
+
+                <!-- BEBIDAS -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'productos:categoria' 5 %}"
+                    >
+                        Bebidas
+                    </a>
+
+                </li>
+
+
+                <!-- PROMOCIONES -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'combos:lista' %}"
+                    >
+                        Promociones
+                    </a>
+
+                </li>
+
+
+                <!-- FONDOS -->
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% if request.user.is_authenticated %}{% url 'fondos:mis_solicitudes' %}{% else %}{% url 'login' %}?next={% url 'fondos:mis_solicitudes' %}{% endif %}"
+                    >
+                        Fondos
+                    </a>
+
+                </li>
+
+
+                <!-- CARRITO -->
+
+                <li class="nav-item ms-lg-2">
+
+                    <a
+                        class="btn btn-carrito"
+                        href="{% url 'carrito:detalle' %}"
+                    >
+
+                        <i class="bi bi-cart3 me-1"></i>
+
+                        Carrito
+
+                    </a>
+
+                </li>
+
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pedidos:mis_pedidos' %}">Mis pedidos</a>
+                    </li>
+                    {% if request.user.fondos_gestionados.exists or request.user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'fondos:gestion_solicitudes' %}">Gestionar nómina</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link nav-link border-0">Salir</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Ingresar</a>
+                    </li>
+                {% endif %}
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =====================================================
+     CONTENIDO
+====================================================== -->
+
+<main>
+
+    {% if messages %}
+        <div class="container pt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
+<footer class="footer-custom">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+
+            <!-- =================================================
+                 INFORMACIÓN
+            ================================================== -->
+
+            <div class="col-lg-4">
+
+                <h5>
+                    Tío Campo Commerce
+                </h5>
+
+                <p>
+
+                    Plataforma de comercio electrónico
+                    para la compra de productos del campo.
+
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 NAVEGACIÓN
+            ================================================== -->
+
+            <div class="col-lg-4">
+
+                <h5>
+                    Navegación
+                </h5>
+
+                <p>
+
+                    <a href="/">
+                        Inicio
+                    </a>
+
+                </p>
+
+                <p>
+
+                    <a href="{% url 'productos:lista' %}">
+                        Productos
+                    </a>
+
+                </p>
+
+                <p>
+
+                    <a href="{% url 'combos:lista' %}">
+                        Promociones
+                    </a>
+
+                </p>
+
+                <p>
+
+                    <a href="#">
+                        Fondos de empleados
+                    </a>
+
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 CONTACTO
+            ================================================== -->
+
+            <div class="col-lg-4">
+
+                <h5>
+                    Contacto
+                </h5>
+
+                <p>
+
+                    <i class="bi bi-envelope me-2"></i>
+
+                    Contacto
+
+                </p>
+
+                <p>
+
+                    <i class="bi bi-telephone me-2"></i>
+
+                    Atención al cliente
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <hr>
+
+
+        <div class="text-center">
+
+            © 2026 Tío Campo Commerce
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- =====================================================
+     BOOTSTRAP JAVASCRIPT
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+{% block js %}
+{% endblock %}
+
+
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class FondosConfig(AppConfig):
+
+    default_auto_field = "django.db.models.BigAutoField"
+
+    name = "apps.fondos"
+
+    verbose_name = "Fondos de empleados"

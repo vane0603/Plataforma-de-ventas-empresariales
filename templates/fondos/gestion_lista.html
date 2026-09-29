@@ -1,0 +1,19 @@
+{% extends "layouts/base.html" %}
+{% block title %}Gestión de solicitudes de nómina{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <h1 class="section-title mb-4">Solicitudes por revisar</h1>
+  {% for solicitud in solicitudes %}
+    <div class="product-card p-4 mb-3">
+      <div class="row align-items-center g-3">
+        <div class="col-md-2"><strong>#{{ solicitud.id }}</strong><div class="small text-muted">{{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</div></div>
+        <div class="col-md-3">{{ solicitud.nombre_completo }}<div class="small text-muted">CC {{ solicitud.documento }}</div></div>
+        <div class="col-md-2">{{ solicitud.fondo.nombre }}</div>
+        <div class="col-md-2">${{ solicitud.valor_solicitado|floatformat:0 }}</div>
+        <div class="col-md-1"><span class="badge text-bg-secondary">{{ solicitud.get_estado_display }}</span></div>
+        <div class="col-md-2 text-md-end"><a class="btn btn-tio" href="{% url 'fondos:gestion_detalle' solicitud.id %}">Revisar</a></div>
+      </div>
+    </div>
+  {% empty %}<div class="alert alert-info">No hay solicitudes asignadas a este usuario.</div>{% endfor %}
+</div></section>
+{% endblock %}

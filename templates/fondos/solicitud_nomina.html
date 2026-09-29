@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+{% block title %}Solicitud de descuento por nómina{% endblock %}
+{% block content %}
+<section class="py-5"><div class="container">
+  <div class="mb-4"><span style="color:var(--dorado);font-weight:600;">DESCUENTO POR NÓMINA</span><h1 class="section-title mt-2">Datos para validación del fondo</h1></div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <form method="post" class="product-card p-4">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="{% if field.name == 'observaciones_usuario' %}col-12{% else %}col-md-6{% endif %}">
+              <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="alert mt-4" style="background:var(--crema);border:none;">El fondo validará si estás vinculado, el cupo disponible y si la compra puede aprobarse total o parcialmente.</div>
+        <button type="submit" class="btn btn-tio btn-lg">Enviar solicitud</button>
+      </form>
+    </div>
+    <div class="col-lg-4">
+      <div class="product-card p-4" style="position:sticky;top:20px;">
+        <h4 class="section-title mb-3">Pedido {{ pedido.numero }}</h4>
+        {% for item in pedido.items.all %}
+          <div class="mb-3"><strong>{{ item.producto_nombre }}</strong><div class="small text-muted">{{ item.presentacion }} · {{ item.cantidad }} unidad(es)</div><div>${{ item.subtotal|floatformat:0 }}</div></div>
+        {% endfor %}
+        <hr><div class="d-flex justify-content-between"><strong>Valor solicitado</strong><span class="price">${{ total|floatformat:0 }}</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

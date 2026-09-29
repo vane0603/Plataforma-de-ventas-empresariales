@@ -1,0 +1,444 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+    Combos | Tío Campo Commerce
+{% endblock %}
+
+
+{% block content %}
+
+<section class="py-5">
+
+    <div class="container">
+
+        <!-- ========================================= -->
+        <!-- ENCABEZADO -->
+        <!-- ========================================= -->
+
+        <div class="text-center mb-5">
+
+            <span
+                style="
+                    color: var(--dorado);
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                "
+            >
+                PROMOCIONES
+            </span>
+
+            <h1 class="section-title mt-2">
+                Combos especiales
+            </h1>
+
+            <p class="text-muted">
+
+                Selecciona nuestros combos y agrégalos
+                directamente al carrito.
+
+            </p>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- LISTADO DE COMBOS -->
+        <!-- ========================================= -->
+
+        <div class="row g-4">
+
+            {% for combo in combos %}
+
+                <div class="col-12 col-md-6 col-lg-4">
+
+                    <div
+                        class="
+                            product-card
+                            h-100
+                            d-flex
+                            flex-column
+                        "
+                    >
+
+
+                        <!-- ================================= -->
+                        <!-- IMAGEN -->
+                        <!-- ================================= -->
+
+                        {% if combo.imagen %}
+
+                            <div
+                                class="product-image-container"
+                                style="
+                                    height: 280px;
+                                    overflow: hidden;
+                                    background: white;
+                                "
+                            >
+
+                                <img
+                                    src="{{ combo.imagen.url }}"
+                                    alt="{{ combo.nombre }}"
+                                    style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                        padding: 15px;
+                                    "
+                                >
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="
+                                    product-image-container
+                                    d-flex
+                                    align-items-center
+                                    justify-content-center
+                                "
+                                style="
+                                    height: 280px;
+                                    background: var(--gris-claro);
+                                "
+                            >
+
+                                <i
+                                    class="bi bi-box-seam"
+                                    style="
+                                        font-size: 4rem;
+                                        color: var(--dorado);
+                                    "
+                                ></i>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- ================================= -->
+                        <!-- INFORMACIÓN -->
+                        <!-- ================================= -->
+
+                        <div
+                            class="
+                                p-4
+                                d-flex
+                                flex-column
+                                flex-grow-1
+                            "
+                        >
+
+
+                            <!-- DESTACADO -->
+
+                            {% if combo.destacado %}
+
+                                <span
+                                    class="
+                                        badge
+                                        rounded-pill
+                                        mb-2
+                                        align-self-start
+                                    "
+                                    style="
+                                        background: var(--dorado);
+                                        color: white;
+                                    "
+                                >
+                                    DESTACADO
+                                </span>
+
+                            {% endif %}
+
+
+                            <!-- TIPO -->
+
+                            <small
+                                style="
+                                    color: var(--dorado);
+                                    font-weight: 600;
+                                "
+                            >
+                                COMBO
+                            </small>
+
+
+                            <!-- NOMBRE -->
+
+                            <h4 class="mt-2">
+
+                                {{ combo.nombre }}
+
+                            </h4>
+
+
+                            <!-- CÓDIGO -->
+
+                            <small class="text-muted mb-2">
+
+                                Código:
+                                {{ combo.codigo }}
+
+                            </small>
+
+
+                            <!-- DESCRIPCIÓN -->
+
+                            {% if combo.descripcion %}
+
+                                <p class="text-muted">
+
+                                    {{ combo.descripcion|truncatechars:120 }}
+
+                                </p>
+
+                            {% endif %}
+
+
+                            <!-- ================================= -->
+                            <!-- PRECIO Y STOCK -->
+                            <!-- ================================= -->
+
+                            <div class="mt-auto">
+
+
+                                {% if combo.precio_anterior %}
+
+                                    <div
+                                        class="text-muted small"
+                                        style="
+                                            text-decoration: line-through;
+                                        "
+                                    >
+
+                                        Antes:
+                                        ${{ combo.precio_anterior|floatformat:0 }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="price">
+
+                                    ${{ combo.precio|floatformat:0 }}
+
+                                </div>
+
+
+                                <!-- STOCK -->
+
+                                {% if combo.stock > 0 %}
+
+                                    <small
+                                        class="
+                                            text-success
+                                            d-block
+                                            mt-2
+                                        "
+                                    >
+
+                                        <i
+                                            class="
+                                                bi
+                                                bi-check-circle
+                                                me-1
+                                            "
+                                        ></i>
+
+                                        {{ combo.stock }}
+                                        unidad(es) disponibles
+
+                                    </small>
+
+                                {% else %}
+
+                                    <small
+                                        class="
+                                            text-danger
+                                            d-block
+                                            mt-2
+                                        "
+                                    >
+
+                                        <i
+                                            class="
+                                                bi
+                                                bi-x-circle
+                                                me-1
+                                            "
+                                        ></i>
+
+                                        Agotado
+
+                                    </small>
+
+                                {% endif %}
+
+
+                                <!-- ================================= -->
+                                <!-- BOTONES -->
+                                <!-- ================================= -->
+
+                                <div
+                                    class="
+                                        d-grid
+                                        gap-2
+                                        mt-4
+                                    "
+                                >
+
+
+                                    <!-- VER DETALLE -->
+
+                                    <a
+                                        href="{% url 'combos:detalle' combo.id %}"
+                                        class="
+                                            btn
+                                            btn-outline-dark
+                                        "
+                                    >
+
+                                        <i
+                                            class="
+                                                bi
+                                                bi-eye
+                                                me-2
+                                            "
+                                        ></i>
+
+                                        Ver combo
+
+                                    </a>
+
+
+                                    <!-- AGREGAR AL CARRITO -->
+
+                                    {% if combo.stock > 0 %}
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'carrito:agregar_combo' combo.id %}"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <input
+                                                type="hidden"
+                                                name="cantidad"
+                                                value="1"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="
+                                                    btn
+                                                    btn-tio
+                                                    w-100
+                                                "
+                                            >
+
+                                                <i
+                                                    class="
+                                                        bi
+                                                        bi-cart-plus
+                                                        me-2
+                                                    "
+                                                ></i>
+
+                                                Agregar al carrito
+
+                                            </button>
+
+                                        </form>
+
+                                    {% else %}
+
+                                        <button
+                                            type="button"
+                                            class="
+                                                btn
+                                                btn-secondary
+                                                w-100
+                                            "
+                                            disabled
+                                        >
+
+                                            <i
+                                                class="
+                                                    bi
+                                                    bi-x-circle
+                                                    me-2
+                                                "
+                                            ></i>
+
+                                            Agotado
+
+                                        </button>
+
+                                    {% endif %}
+
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            <!-- ========================================= -->
+            <!-- SIN COMBOS -->
+            <!-- ========================================= -->
+
+            {% empty %}
+
+                <div class="col-12">
+
+                    <div
+                        class="
+                            text-center
+                            p-5
+                            product-card
+                        "
+                    >
+
+                        <i
+                            class="bi bi-gift"
+                            style="
+                                font-size: 4rem;
+                                color: var(--dorado);
+                            "
+                        ></i>
+
+                        <h3 class="mt-4">
+
+                            Próximamente
+
+                        </h3>
+
+                        <p class="text-muted mb-0">
+
+                            No hay combos activos
+                            en este momento.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

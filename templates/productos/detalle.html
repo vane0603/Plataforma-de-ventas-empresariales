@@ -1,0 +1,998 @@
+{% extends "layouts/base.html" %}
+
+
+{% block title %}
+
+    {{ producto.nombre }} | Tío Campo Commerce
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="py-5">
+
+    <div class="container">
+
+        <!-- =====================================================
+             PRODUCTO
+        ====================================================== -->
+
+        <div class="row g-5 align-items-start">
+
+
+            <!-- =================================================
+                 IMAGEN
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <div class="product-card p-3">
+
+                    {% if producto.imagen %}
+
+                        <div
+                            class="d-flex align-items-center justify-content-center"
+                            style="
+                                min-height: 500px;
+                                background-color: var(--blanco);
+                                border-radius: 20px;
+                                overflow: hidden;
+                            "
+                        >
+
+                            <img
+                                src="{{ producto.imagen.url }}"
+                                alt="{{ producto.nombre }}"
+                                class="product-detail-image"
+                            >
+
+                        </div>
+
+                    {% else %}
+
+                        <div
+                            class="
+                                d-flex
+                                align-items-center
+                                justify-content-center
+                            "
+                            style="
+                                min-height: 500px;
+                                background: var(--gris-claro);
+                                border-radius: 20px;
+                            "
+                        >
+
+                            <i
+                                class="bi bi-image"
+                                style="
+                                    font-size: 5rem;
+                                    color: var(--gris);
+                                "
+                            ></i>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INFORMACIÓN PRINCIPAL
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+
+                <!-- CATEGORÍA -->
+
+                <small
+                    style="
+                        color: var(--dorado);
+                        font-weight: 600;
+                    "
+                >
+
+                    {{ producto.categoria.nombre }}
+
+                </small>
+
+
+                <!-- NOMBRE -->
+
+                <h1 class="section-title mt-2">
+
+                    {{ producto.nombre }}
+
+                </h1>
+
+
+                <!-- MARCA -->
+
+                {% if producto.marca %}
+
+                    <p class="text-muted">
+
+                        Marca:
+
+                        <strong>
+                            {{ producto.marca.nombre }}
+                        </strong>
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- DESCRIPCIÓN CORTA -->
+
+                {% if producto.descripcion %}
+
+                    <p class="mt-4">
+
+                        {{ producto.descripcion }}
+
+                    </p>
+
+                {% endif %}
+
+
+                <hr class="my-4">
+
+
+                <!-- =================================================
+                     FORMULARIO DE COMPRA
+                ================================================== -->
+
+                {% if presentaciones %}
+
+                    <form
+                        method="post"
+                        id="formCarrito"
+                    >
+
+                        {% csrf_token %}
+
+
+                        <!-- =========================================
+                             PRESENTACIÓN
+                        ========================================== -->
+
+                        <div class="mt-4">
+
+                            <label
+                                for="presentacion"
+                                class="form-label fw-semibold"
+                            >
+
+                                Presentación
+
+                            </label>
+
+
+                            <select
+                                id="presentacion"
+                                name="presentacion"
+                                class="form-select form-select-lg"
+                                style="
+                                    border-radius: 12px;
+                                    padding: 14px 16px;
+                                "
+                                required
+                            >
+
+                                {% for item in presentaciones %}
+
+                                    <option
+                                        value="{{ item.id }}"
+                                        data-precio="{{ item.precio }}"
+                                        data-url="{% url 'carrito:agregar' item.id %}"
+                                        {% if forloop.first %}
+                                            selected
+                                        {% endif %}
+                                    >
+
+                                        {{ item.presentacion.nombre }}
+
+                                    </option>
+
+                                {% empty %}
+
+                                    <option value="">
+
+                                        No hay presentaciones disponibles
+
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             PRECIO
+                        ========================================== -->
+
+                        <div class="mt-4">
+
+                            <span class="text-muted">
+
+                                Precio
+
+                            </span>
+
+
+                            <div
+                                id="precioProducto"
+                                class="price mt-1"
+                            >
+
+                                ${{ presentaciones.0.precio|floatformat:0 }}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             CANTIDAD
+                        ========================================== -->
+
+                        <div class="mt-4">
+
+                            <label
+                                for="cantidad"
+                                class="form-label fw-semibold"
+                            >
+
+                                Cantidad
+
+                            </label>
+
+
+                            <div
+                                class="input-group"
+                                style="max-width: 180px;"
+                            >
+
+
+                                <!-- RESTAR -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    id="btnRestar"
+                                >
+
+                                    −
+
+                                </button>
+
+
+                                <!-- CANTIDAD -->
+
+                                <input
+                                    type="number"
+                                    id="cantidad"
+                                    name="cantidad"
+                                    class="form-control text-center"
+                                    value="1"
+                                    min="1"
+                                    step="1"
+                                    required
+                                >
+
+
+                                <!-- SUMAR -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    id="btnSumar"
+                                >
+
+                                    +
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             AGREGAR AL CARRITO
+                        ========================================== -->
+
+                        <div class="mt-4">
+
+                            <button
+                                type="submit"
+                                class="btn btn-tio btn-lg px-5"
+                                id="btnAgregarCarrito"
+                            >
+
+                                <i class="bi bi-cart-plus me-2"></i>
+
+                                Agregar al carrito
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                {% else %}
+
+                    <div class="alert alert-warning mt-4">
+
+                        Este producto no tiene presentaciones
+                        disponibles para la venta.
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- =================================================
+                     INFORMACIÓN DE ENTREGA
+                ================================================== -->
+
+                <div
+                    class="mt-4 p-4 rounded-4"
+                    style="
+                        background: var(--crema);
+                    "
+                >
+
+                    <!-- ENTREGA -->
+
+                    <div class="d-flex mb-3">
+
+                        <i
+                            class="bi bi-truck me-3"
+                            style="
+                                color: var(--verde-principal);
+                                font-size: 1.5rem;
+                            "
+                        ></i>
+
+
+                        <span>
+
+                            Entrega en la fecha programada
+                            por la empresa.
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- CALENDARIO -->
+
+                    <div class="d-flex">
+
+                        <i
+                            class="bi bi-calendar-check me-3"
+                            style="
+                                color: var(--azul);
+                                font-size: 1.5rem;
+                            "
+                        ></i>
+
+
+                        <span>
+
+                            Los pedidos se cerrarán
+                            según el calendario de entrega.
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             INFORMACIÓN DETALLADA DEL PRODUCTO
+        ====================================================== -->
+
+        <div class="row mt-5 g-5">
+
+
+            <!-- =================================================
+                 DESCRIPCIÓN
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <div class="product-info-description pe-lg-4">
+
+                    <h4
+                        class="mb-4"
+                        style="
+                            color: var(--azul);
+                            font-weight: 600;
+                        "
+                    >
+
+                        Descripción
+
+                    </h4>
+
+
+                    {% if producto.descripcion %}
+
+                        <p
+                            class="mb-0"
+                            style="
+                                line-height: 1.9;
+                                color: #333;
+                            "
+                        >
+
+                            {{ producto.descripcion }}
+
+                        </p>
+
+                    {% else %}
+
+                        <p class="text-muted">
+
+                            Información próximamente disponible.
+
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INFORMACIÓN DEL PRODUCTO
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <div class="product-info-panel">
+
+
+                    <div
+                        class="
+                            d-flex
+                            justify-content-between
+                            align-items-center
+                            mb-4
+                        "
+                    >
+
+                        <h4
+                            class="mb-0"
+                            style="
+                                color: var(--azul);
+                                font-weight: 600;
+                            "
+                        >
+
+                            Información del Producto
+
+                        </h4>
+
+
+                        <i
+                            class="bi bi-dash-lg"
+                            style="
+                                color: var(--azul);
+                            "
+                        ></i>
+
+                    </div>
+
+
+                    <!-- TIPO DE PRODUCTO -->
+
+                    {% if producto.tipo_producto %}
+
+                        <div class="product-info-item mb-3">
+
+                            <strong>
+
+                                Tipo de producto:
+
+                            </strong>
+
+                            <span>
+
+                                {{ producto.tipo_producto }}
+
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- CARACTERÍSTICAS -->
+
+                    {% if producto.caracteristicas %}
+
+                        <div class="product-info-item mb-3">
+
+                            <strong>
+
+                                Características:
+
+                            </strong>
+
+                            <span>
+
+                                {{ producto.caracteristicas }}
+
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- USOS RECOMENDADOS -->
+
+                    {% if producto.usos_recomendados %}
+
+                        <div class="product-info-item mb-3">
+
+                            <strong>
+
+                                Usos recomendados:
+
+                            </strong>
+
+                            <span>
+
+                                {{ producto.usos_recomendados }}
+
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ALMACENAMIENTO -->
+
+                    {% if producto.almacenamiento %}
+
+                        <div class="product-info-item mb-3">
+
+                            <strong>
+
+                                Almacenamiento:
+
+                            </strong>
+
+                            <span>
+
+                                {{ producto.almacenamiento }}
+
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- PRESENTACIONES DISPONIBLES -->
+
+                    <div class="product-info-item">
+
+                        <strong>
+
+                            Presentaciones disponibles:
+
+                        </strong>
+
+                        <span>
+
+                            {% for item in presentaciones %}
+
+                                {{ item.presentacion.nombre }}
+
+                                {% if not forloop.last %}
+                                    ,
+                                {% endif %}
+
+                            {% empty %}
+
+                                No disponibles.
+
+                            {% endfor %}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ESTILOS ESPECÍFICOS
+====================================================== -->
+
+<style>
+
+    .product-info-description {
+
+        padding-right: 20px;
+
+    }
+
+
+    .product-info-description p {
+
+        font-size: 1rem;
+
+    }
+
+
+    .product-info-panel {
+
+        color: #222;
+
+    }
+
+
+    .product-info-item {
+
+        line-height: 1.7;
+
+    }
+
+
+    .product-info-item strong {
+
+        color: #111;
+
+        margin-right: 5px;
+
+    }
+
+
+    .product-info-item span {
+
+        color: #333;
+
+    }
+
+
+    @media (max-width: 768px) {
+
+        .product-info-description {
+
+            padding-right: 0;
+
+        }
+
+    }
+
+</style>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        /* =================================================
+           ELEMENTOS
+        ================================================== */
+
+        const selector =
+            document.getElementById("presentacion");
+
+
+        const precio =
+            document.getElementById("precioProducto");
+
+
+        const inputCantidad =
+            document.getElementById("cantidad");
+
+
+        const btnRestar =
+            document.getElementById("btnRestar");
+
+
+        const btnSumar =
+            document.getElementById("btnSumar");
+
+
+        const formCarrito =
+            document.getElementById("formCarrito");
+
+
+        /* =================================================
+           ACTUALIZAR PRECIO
+        ================================================== */
+
+        function actualizarPrecio() {
+
+            if (!selector || !precio) {
+
+                return;
+
+            }
+
+
+            const opcion =
+                selector.options[
+                    selector.selectedIndex
+                ];
+
+
+            if (!opcion) {
+
+                return;
+
+            }
+
+
+            const valor =
+                parseFloat(
+                    opcion.dataset.precio || 0
+                );
+
+
+            precio.textContent =
+                "$" +
+                valor.toLocaleString(
+                    "es-CO",
+                    {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }
+                );
+
+        }
+
+
+        /* =================================================
+           CAMBIAR PRESENTACIÓN
+        ================================================== */
+
+        if (selector) {
+
+            selector.addEventListener(
+                "change",
+                actualizarPrecio
+            );
+
+        }
+
+
+        /* =================================================
+           RESTAR CANTIDAD
+        ================================================== */
+
+        if (btnRestar) {
+
+            btnRestar.addEventListener(
+                "click",
+                function () {
+
+                    let cantidad =
+                        parseInt(
+                            inputCantidad.value
+                        ) || 1;
+
+
+                    cantidad--;
+
+
+                    if (cantidad < 1) {
+
+                        cantidad = 1;
+
+                    }
+
+
+                    inputCantidad.value =
+                        cantidad;
+
+                }
+            );
+
+        }
+
+
+        /* =================================================
+           SUMAR CANTIDAD
+        ================================================== */
+
+        if (btnSumar) {
+
+            btnSumar.addEventListener(
+                "click",
+                function () {
+
+                    let cantidad =
+                        parseInt(
+                            inputCantidad.value
+                        ) || 1;
+
+
+                    cantidad++;
+
+
+                    inputCantidad.value =
+                        cantidad;
+
+                }
+            );
+
+        }
+
+
+        /* =================================================
+           VALIDAR CANTIDAD MANUAL
+        ================================================== */
+
+        if (inputCantidad) {
+
+            inputCantidad.addEventListener(
+                "change",
+                function () {
+
+                    let cantidad =
+                        parseInt(
+                            this.value
+                        ) || 1;
+
+
+                    if (cantidad < 1) {
+
+                        cantidad = 1;
+
+                    }
+
+
+                    this.value =
+                        cantidad;
+
+                }
+            );
+
+        }
+
+
+        /* =================================================
+           ENVIAR AL CARRITO
+        ================================================== */
+
+        if (formCarrito) {
+
+            formCarrito.addEventListener(
+                "submit",
+                function (event) {
+
+                    if (!selector) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Selecciona una presentación."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const opcion =
+                        selector.options[
+                            selector.selectedIndex
+                        ];
+
+
+                    if (!opcion || !opcion.value) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Selecciona una presentación."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const cantidad =
+                        parseInt(
+                            inputCantidad.value
+                        ) || 1;
+
+
+                    if (cantidad < 1) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "La cantidad debe ser mayor a cero."
+                        );
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Cada presentación trae su propia
+                     * URL de agregar al carrito mediante
+                     * data-url.
+                     */
+
+                    const urlCarrito =
+                        opcion.dataset.url;
+
+
+                    if (!urlCarrito) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "No fue posible identificar la presentación."
+                        );
+
+                        return;
+
+                    }
+
+
+                    formCarrito.action =
+                        urlCarrito;
+
+                }
+            );
+
+        }
+
+
+        /* =================================================
+           PRECIO INICIAL
+        ================================================== */
+
+        actualizarPrecio();
+
+    }
+);
+
+</script>
+
+
+{% endblock %}

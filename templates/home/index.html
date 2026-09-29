@@ -1,0 +1,1525 @@
+{% extends "layouts/base.html" %}
+
+
+{% block title %}
+
+    Inicio | Tío Campo Commerce
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =====================================================
+     HERO PRINCIPAL
+====================================================== -->
+
+<section class="hero">
+
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+
+            <!-- =================================================
+                 TEXTO PRINCIPAL
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <span
+                    class="badge rounded-pill px-3 py-2 mb-3"
+                    style="
+                        background-color: var(--dorado);
+                        color: var(--blanco);
+                    "
+                >
+                    Del campo a tu mesa
+                </span>
+
+
+                <h1 class="hero-title">
+
+                    Calidad que nutre,
+
+                    <br>
+
+                    comunidad que crece.
+
+                </h1>
+
+
+                <p class="hero-subtitle mt-4">
+
+                    Encuentra productos de calidad Tío Campo,
+                    realiza tu pedido de forma sencilla y recibe
+                    tu compra en la fecha programada.
+
+                </p>
+
+
+                <div class="d-flex flex-wrap gap-3 mt-4">
+
+
+                    <!-- CATÁLOGO -->
+
+                    <a
+                        href="{% url 'productos:lista' %}"
+                        class="btn btn-tio"
+                    >
+
+                        <i class="bi bi-grid me-2"></i>
+
+                        Ver catálogo
+
+                    </a>
+
+
+                    <!-- PRODUCTOS -->
+
+                    <a
+                        href="#productos-destacados"
+                        class="btn btn-outline-dark rounded-pill px-4 py-3"
+                    >
+
+                        Ver productos
+
+                    </a>
+
+
+                    <!-- COMBOS -->
+
+                    <a
+                        href="#combos"
+                        class="btn btn-outline-dark rounded-pill px-4 py-3"
+                    >
+
+                        <i class="bi bi-box-seam me-2"></i>
+
+                        Ver combos
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PANEL DESTACADO
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <div
+                    class="p-4 p-lg-5 rounded-4"
+                    style="
+                        background:
+                            linear-gradient(
+                                135deg,
+                                var(--verde-principal),
+                                var(--azul)
+                            );
+                        color: var(--blanco);
+                        box-shadow: var(--sombra);
+                    "
+                >
+
+                    <div class="row g-4">
+
+
+                        <!-- PRODUCTOS -->
+
+                        <div class="col-6">
+
+                            <div class="text-center">
+
+                                <i
+                                    class="bi bi-basket3"
+                                    style="
+                                        font-size: 2.7rem;
+                                        color: var(--dorado-claro);
+                                    "
+                                ></i>
+
+
+                                <h5 class="mt-3">
+
+                                    Productos
+
+                                </h5>
+
+
+                                <small>
+
+                                    Encuentra productos
+                                    para toda tu familia.
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- COMBOS -->
+
+                        <div class="col-6">
+
+                            <div class="text-center">
+
+                                <i
+                                    class="bi bi-box-seam"
+                                    style="
+                                        font-size: 2.7rem;
+                                        color: var(--dorado-claro);
+                                    "
+                                ></i>
+
+
+                                <h5 class="mt-3">
+
+                                    Combos
+
+                                </h5>
+
+
+                                <small>
+
+                                    Disfruta nuestras
+                                    combinaciones especiales.
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PAGOS -->
+
+                        <div class="col-6">
+
+                            <div class="text-center">
+
+                                <i
+                                    class="bi bi-credit-card"
+                                    style="
+                                        font-size: 2.7rem;
+                                        color: var(--dorado-claro);
+                                    "
+                                ></i>
+
+
+                                <h5 class="mt-3">
+
+                                    Diferentes pagos
+
+                                </h5>
+
+
+                                <small>
+
+                                    Elige el medio de pago
+                                    que prefieras.
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ENTREGA -->
+
+                        <div class="col-6">
+
+                            <div class="text-center">
+
+                                <i
+                                    class="bi bi-truck"
+                                    style="
+                                        font-size: 2.7rem;
+                                        color: var(--dorado-claro);
+                                    "
+                                ></i>
+
+
+                                <h5 class="mt-3">
+
+                                    Entrega
+
+                                </h5>
+
+
+                                <small>
+
+                                    Recibe tu pedido
+                                    en la fecha programada.
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CATEGORÍAS
+====================================================== -->
+
+<section
+    id="categorias"
+    class="py-5"
+>
+
+    <div class="container">
+
+
+        <div class="text-center mb-5">
+
+            <span
+                style="
+                    color: var(--dorado);
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                "
+            >
+
+                DESCUBRE NUESTRO CATÁLOGO
+
+            </span>
+
+
+            <h2 class="section-title mt-2">
+
+                Compra por categoría
+
+            </h2>
+
+
+            <p class="text-muted">
+
+                Encuentra tus productos favoritos de Tío Campo.
+
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+
+            {% for categoria in categorias %}
+
+                <div class="col-12 col-sm-6 col-lg">
+
+
+                    <!-- TARJETA FUNCIONAL -->
+
+                    <a
+                        href="{% url 'productos:categoria' categoria.id %}"
+                        class="text-decoration-none"
+                    >
+
+                        <div
+                            class="
+                                product-card
+                                text-center
+                                p-4
+                                h-100
+                            "
+                        >
+
+
+                            <div class="mb-3">
+
+
+                                {% if categoria.nombre == "Lácteos" %}
+
+                                    <i
+                                        class="bi bi-cup-straw"
+                                        style="
+                                            font-size: 3rem;
+                                            color: var(--verde-principal);
+                                        "
+                                    ></i>
+
+
+                                {% elif categoria.nombre == "Cárnicos" %}
+
+                                    <i
+                                        class="bi bi-basket3"
+                                        style="
+                                            font-size: 3rem;
+                                            color: var(--azul);
+                                        "
+                                    ></i>
+
+
+                                {% elif categoria.nombre == "Panadería" %}
+
+                                    <i
+                                        class="bi bi-shop"
+                                        style="
+                                            font-size: 3rem;
+                                            color: var(--dorado);
+                                        "
+                                    ></i>
+
+
+                                {% elif categoria.nombre == "Snacks" %}
+
+                                    <i
+                                        class="bi bi-box2-heart"
+                                        style="
+                                            font-size: 3rem;
+                                            color: var(--verde-claro);
+                                        "
+                                    ></i>
+
+
+                                {% elif categoria.nombre == "Bebidas" %}
+
+                                    <i
+                                        class="bi bi-cup"
+                                        style="
+                                            font-size: 3rem;
+                                            color: var(--azul-claro);
+                                        "
+                                    ></i>
+
+
+                                {% else %}
+
+                                    <i
+                                        class="bi bi-grid"
+                                        style="
+                                            font-size: 3rem;
+                                            color: var(--verde-principal);
+                                        "
+                                    ></i>
+
+                                {% endif %}
+
+
+                            </div>
+
+
+                            <h4
+                                style="
+                                    color: var(--verde-principal);
+                                "
+                            >
+
+                                {{ categoria.nombre }}
+
+                            </h4>
+
+
+                            {% if categoria.descripcion %}
+
+                                <p class="text-muted mb-0">
+
+                                    {{ categoria.descripcion }}
+
+                                </p>
+
+                            {% else %}
+
+                                <p class="text-muted mb-0">
+
+                                    Descubre nuestros productos.
+
+                                </p>
+
+                            {% endif %}
+
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="col-12">
+
+                    <div
+                        class="
+                            alert
+                            alert-light
+                            text-center
+                        "
+                    >
+
+                        Todavía no hay categorías configuradas.
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PRODUCTOS DESTACADOS
+====================================================== -->
+
+<section
+    id="productos-destacados"
+    class="py-5"
+>
+
+    <div class="container">
+
+
+        <div class="text-center mb-5">
+
+            <span
+                style="
+                    color: var(--dorado);
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                "
+            >
+
+                NUESTROS PRODUCTOS
+
+            </span>
+
+
+            <h2 class="section-title mt-2">
+
+                Productos destacados
+
+            </h2>
+
+
+            <p class="text-muted">
+
+                Conoce algunos de nuestros productos disponibles.
+
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+
+            {% for producto in productos_destacados %}
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <div class="product-card h-100">
+
+
+                        <!-- IMAGEN -->
+
+                        {% if producto.imagen %}
+
+                            <div class="product-image-container">
+
+                                <img
+                                    src="{{ producto.imagen.url }}"
+                                    alt="{{ producto.nombre }}"
+                                >
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="
+                                    product-image-container
+                                    d-flex
+                                    align-items-center
+                                    justify-content-center
+                                "
+                            >
+
+                                <i
+                                    class="bi bi-image"
+                                    style="
+                                        font-size:3rem;
+                                        color:var(--gris);
+                                    "
+                                ></i>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- INFORMACIÓN -->
+
+                        <div class="p-4">
+
+
+                            <small
+                                style="
+                                    color:var(--dorado);
+                                    font-weight:600;
+                                "
+                            >
+
+                                {{ producto.categoria.nombre }}
+
+                            </small>
+
+
+                            <h5 class="mt-2 mb-2">
+
+                                {{ producto.nombre }}
+
+                            </h5>
+
+
+                            {% if producto.marca %}
+
+                                <p class="text-muted mb-2">
+
+                                    {{ producto.marca.nombre }}
+
+                                </p>
+
+                            {% endif %}
+
+
+                            {% if producto.precio_desde %}
+
+                                <div class="price">
+
+                                    Desde
+
+                                    ${{ producto.precio_desde|floatformat:0 }}
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="text-muted">
+
+                                    Precio no disponible
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- DETALLE -->
+
+                            <a
+                                href="{% url 'productos:detalle' producto.id %}"
+                                class="btn btn-tio w-100 mt-3"
+                            >
+
+                                <i
+                                    class="bi bi-eye me-2"
+                                ></i>
+
+                                Ver producto
+
+                            </a>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="col-12">
+
+                    <div
+                        class="text-center p-5"
+                        style="
+                            background:var(--blanco);
+                            border-radius:20px;
+                            box-shadow:var(--sombra);
+                        "
+                    >
+
+                        <i
+                            class="bi bi-box-seam"
+                            style="
+                                font-size:3rem;
+                                color:var(--dorado);
+                            "
+                        ></i>
+
+
+                        <h4 class="mt-3">
+
+                            Próximamente
+
+                        </h4>
+
+
+                        <p class="text-muted mb-0">
+
+                            Estamos preparando nuestro catálogo
+                            de productos.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     COMBOS DESTACADOS
+====================================================== -->
+
+<section
+    id="combos"
+    class="py-5"
+>
+
+    <div class="container">
+
+
+        <!-- ENCABEZADO -->
+
+        <div class="text-center mb-5">
+
+            <span
+                style="
+                    color: var(--dorado);
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                "
+            >
+
+                COMBOS
+
+            </span>
+
+
+            <h2 class="section-title mt-2">
+
+                Combos destacados
+
+            </h2>
+
+
+            <p class="text-muted">
+
+                Encuentra nuestras combinaciones especiales.
+
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+
+            {% for combo in combos_destacados %}
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <div class="product-card h-100">
+
+
+                        <!-- IMAGEN -->
+
+                        {% if combo.imagen %}
+
+                            <div class="product-image-container">
+
+                                <img
+                                    src="{{ combo.imagen.url }}"
+                                    alt="{{ combo.nombre }}"
+                                >
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="
+                                    product-image-container
+                                    d-flex
+                                    align-items-center
+                                    justify-content-center
+                                "
+                            >
+
+                                <i
+                                    class="bi bi-box-seam"
+                                    style="
+                                        font-size:3rem;
+                                        color:var(--dorado);
+                                    "
+                                ></i>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- INFORMACIÓN -->
+
+                        <div class="p-4">
+
+
+                            <span
+                                class="badge rounded-pill"
+                                style="
+                                    background:var(--dorado);
+                                    color:var(--blanco);
+                                "
+                            >
+
+                                COMBO
+
+                            </span>
+
+
+                            <h5 class="mt-3">
+
+                                {{ combo.nombre }}
+
+                            </h5>
+
+
+                            {% if combo.descripcion %}
+
+                                <p class="text-muted small">
+
+                                    {{ combo.descripcion|truncatechars:90 }}
+
+                                </p>
+
+                            {% else %}
+
+                                <p class="text-muted small">
+
+                                    Combo especial
+                                    disponible para compra.
+
+                                </p>
+
+                            {% endif %}
+
+
+                            {% if combo.precio_anterior %}
+
+                                <div
+                                    class="text-muted small"
+                                    style="
+                                        text-decoration:line-through;
+                                    "
+                                >
+
+                                    ${{ combo.precio_anterior|floatformat:0 }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="price">
+
+                                ${{ combo.precio|floatformat:0 }}
+
+                            </div>
+
+
+                            {% if combo.stock > 0 %}
+
+                                <small
+                                    class="
+                                        text-success
+                                        d-block
+                                        mt-2
+                                    "
+                                >
+
+                                    Disponible
+
+                                </small>
+
+                            {% else %}
+
+                                <small
+                                    class="
+                                        text-danger
+                                        d-block
+                                        mt-2
+                                    "
+                                >
+
+                                    Agotado
+
+                                </small>
+
+                            {% endif %}
+
+
+                            <a
+                                href="{% url 'combos:detalle' combo.id %}"
+                                class="
+                                    btn
+                                    btn-tio
+                                    w-100
+                                    mt-3
+                                "
+                            >
+
+                                <i
+                                    class="bi bi-eye me-2"
+                                ></i>
+
+                                Ver combo
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="col-12">
+
+                    <div
+                        class="text-center p-5 product-card"
+                    >
+
+                        <i
+                            class="bi bi-box-seam"
+                            style="
+                                font-size:3rem;
+                                color:var(--dorado);
+                            "
+                        ></i>
+
+
+                        <h4 class="mt-3">
+
+                            Próximamente
+
+                        </h4>
+
+
+                        <p class="text-muted mb-0">
+
+                            Estamos preparando nuestros combos.
+
+                        </p>
+
+
+                        <a
+                            href="{% url 'combos:lista' %}"
+                            class="btn btn-tio mt-3"
+                        >
+
+                            Ver combos
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+
+        </div>
+
+
+        <!-- VER TODOS -->
+
+        {% if combos_destacados %}
+
+            <div class="text-center mt-5">
+
+                <a
+                    href="{% url 'combos:lista' %}"
+                    class="
+                        btn
+                        btn-outline-dark
+                        rounded-pill
+                        px-5
+                        py-3
+                    "
+                >
+
+                    Ver todos los combos
+
+                    <i
+                        class="bi bi-arrow-right ms-2"
+                    ></i>
+
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     FONDOS DE EMPLEADOS
+====================================================== -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div
+            class="rounded-4 p-4 p-lg-5"
+            style="
+                background-color:var(--azul);
+                color:var(--blanco);
+                box-shadow:var(--sombra);
+            "
+        >
+
+            <div class="row align-items-center g-4">
+
+
+                <div class="col-lg-8">
+
+                    <span
+                        class="badge rounded-pill mb-3"
+                        style="
+                            background-color:var(--dorado);
+                            color:var(--blanco);
+                        "
+                    >
+
+                        FONDO DE EMPLEADOS
+
+                    </span>
+
+
+                    <h2 class="fw-bold">
+
+                        ¿Eres afiliado a un fondo de empleados?
+
+                    </h2>
+
+
+                    <p class="mt-3 mb-0">
+
+                        Puedes solicitar el pago de tu compra mediante
+                        descuento por nómina. La solicitud será enviada
+                        al fondo de empleados para su respectiva
+                        aprobación.
+
+                    </p>
+
+                </div>
+
+
+                <div class="col-lg-4 text-lg-end">
+
+                    <a
+                        href="#"
+                        class="
+                            btn
+                            btn-light
+                            rounded-pill
+                            px-4
+                            py-3
+                        "
+                    >
+
+                        <i
+                            class="bi bi-person-check me-2"
+                        ></i>
+
+                        Conocer cómo funciona
+
+                    </a>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MÉTODOS DE PAGO
+====================================================== -->
+
+<section class="py-5">
+
+    <div class="container">
+
+
+        <div class="text-center mb-5">
+
+            <span
+                style="
+                    color:var(--dorado);
+                    font-weight:600;
+                    letter-spacing:1px;
+                "
+            >
+
+                FLEXIBILIDAD
+
+            </span>
+
+
+            <h2 class="section-title mt-2">
+
+                Elige cómo pagar
+
+            </h2>
+
+
+            <p class="text-muted">
+
+                Tendrás diferentes alternativas para realizar tu compra.
+
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+
+            <!-- DESCUENTO POR NÓMINA -->
+
+            <div class="col-md-4">
+
+                <div class="product-card p-4 h-100">
+
+                    <i
+                        class="bi bi-building"
+                        style="
+                            font-size:2.5rem;
+                            color:var(--azul);
+                        "
+                    ></i>
+
+
+                    <h4 class="mt-3">
+
+                        Descuento por nómina
+
+                    </h4>
+
+
+                    <p class="text-muted">
+
+                        Disponible para afiliados al fondo de empleados.
+                        La solicitud estará sujeta a aprobación.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAGO ELECTRÓNICO -->
+
+            <div class="col-md-4">
+
+                <div class="product-card p-4 h-100">
+
+                    <i
+                        class="bi bi-credit-card-2-front"
+                        style="
+                            font-size:2.5rem;
+                            color:var(--verde-principal);
+                        "
+                    ></i>
+
+
+                    <h4 class="mt-3">
+
+                        Pago electrónico
+
+                    </h4>
+
+
+                    <p class="text-muted">
+
+                        Utiliza los medios electrónicos
+                        habilitados en la plataforma.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- OTROS MEDIOS -->
+
+            <div class="col-md-4">
+
+                <div class="product-card p-4 h-100">
+
+                    <i
+                        class="bi bi-wallet2"
+                        style="
+                            font-size:2.5rem;
+                            color:var(--dorado);
+                        "
+                    ></i>
+
+
+                    <h4 class="mt-3">
+
+                        Otros medios
+
+                    </h4>
+
+
+                    <p class="text-muted">
+
+                        Si no cuentas con aprobación del fondo,
+                        podrás utilizar otro medio de pago disponible.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ENTREGA PROGRAMADA
+====================================================== -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div class="row align-items-center g-4">
+
+
+            <div class="col-lg-7">
+
+                <span
+                    style="
+                        color:var(--dorado);
+                        font-weight:600;
+                        letter-spacing:1px;
+                    "
+                >
+
+                    ENTREGA PROGRAMADA
+
+                </span>
+
+
+                <h2 class="section-title mt-2">
+
+                    Compra con anticipación
+
+                </h2>
+
+
+                <p class="text-muted mt-3">
+
+                    Para garantizar la organización de nuestros pedidos,
+                    las compras deberán realizarse con mínimo
+                    <strong>8 días de anticipación</strong>
+                    a la fecha programada de entrega.
+
+                </p>
+
+
+                <p class="text-muted">
+
+                    Las fechas, horarios y rutas disponibles serán
+                    definidos previamente por la empresa.
+
+                </p>
+
+            </div>
+
+
+            <div class="col-lg-5">
+
+                <div class="product-card p-4">
+
+
+                    <!-- FECHA -->
+
+                    <div class="d-flex align-items-center mb-4">
+
+                        <i
+                            class="bi bi-calendar-check me-3"
+                            style="
+                                font-size:2.5rem;
+                                color:var(--verde-principal);
+                            "
+                        ></i>
+
+
+                        <div>
+
+                            <h5 class="mb-1">
+
+                                Fecha de entrega
+
+                            </h5>
+
+
+                            <small class="text-muted">
+
+                                Programada por la empresa
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- HORARIO -->
+
+                    <div class="d-flex align-items-center mb-4">
+
+                        <i
+                            class="bi bi-clock me-3"
+                            style="
+                                font-size:2.5rem;
+                                color:var(--azul);
+                            "
+                        ></i>
+
+
+                        <div>
+
+                            <h5 class="mb-1">
+
+                                Horario
+
+                            </h5>
+
+
+                            <small class="text-muted">
+
+                                Según disponibilidad
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RUTA -->
+
+                    <div class="d-flex align-items-center">
+
+                        <i
+                            class="bi bi-geo-alt me-3"
+                            style="
+                                font-size:2.5rem;
+                                color:var(--dorado);
+                            "
+                        ></i>
+
+
+                        <div>
+
+                            <h5 class="mb-1">
+
+                                Ruta de entrega
+
+                            </h5>
+
+
+                            <small class="text-muted">
+
+                                Solo zonas habilitadas
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     LLAMADO FINAL
+====================================================== -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div
+            class="text-center rounded-4 p-5"
+            style="
+                background:
+                    linear-gradient(
+                        135deg,
+                        var(--verde-principal),
+                        var(--verde-secundario)
+                    );
+                color:var(--blanco);
+                box-shadow:var(--sombra);
+            "
+        >
+
+
+            <i
+                class="bi bi-shop"
+                style="
+                    font-size:3rem;
+                    color:var(--dorado-claro);
+                "
+            ></i>
+
+
+            <h2 class="fw-bold mt-3">
+
+                Todo lo que necesitas,
+                en un solo lugar
+
+            </h2>
+
+
+            <p class="mt-3">
+
+                Explora nuestros productos y
+                encuentra los mejores combos.
+
+            </p>
+
+
+            <div
+                class="
+                    d-flex
+                    justify-content-center
+                    flex-wrap
+                    gap-3
+                    mt-4
+                "
+            >
+
+
+                <!-- PRODUCTOS -->
+
+                <a
+                    href="{% url 'productos:lista' %}"
+                    class="
+                        btn
+                        btn-light
+                        rounded-pill
+                        px-5
+                        py-3
+                    "
+                >
+
+                    <i class="bi bi-cart-plus me-2"></i>
+
+                    Comenzar compra
+
+                </a>
+
+
+                <!-- COMBOS -->
+
+                <a
+                    href="{% url 'combos:lista' %}"
+                    class="
+                        btn
+                        rounded-pill
+                        px-5
+                        py-3
+                    "
+                    style="
+                        background:var(--dorado);
+                        color:var(--blanco);
+                        border:none;
+                    "
+                >
+
+                    <i class="bi bi-box-seam me-2"></i>
+
+                    Ver combos
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+{% endblock %}
