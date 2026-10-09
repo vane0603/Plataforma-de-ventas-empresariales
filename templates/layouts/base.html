@@ -820,7 +820,7 @@
 
                     <a
                         class="nav-link"
-                        href="{% url 'combos:lista' %}"
+                        href="{% url 'combos:lista_combos' %}"
                     >
                         Promociones
                     </a>
@@ -859,25 +859,80 @@
 
                 </li>
 
+
                 {% if request.user.is_authenticated %}
+
+                    <!-- MIS PEDIDOS -->
+
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pedidos:mis_pedidos' %}">Mis pedidos</a>
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'pedidos:mis_pedidos' %}"
+                        >
+                            Mis pedidos
+                        </a>
+
                     </li>
+
+
+                    <!-- GESTIONAR NÓMINA -->
+
                     {% if request.user.fondos_gestionados.exists or request.user.is_superuser %}
+
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'fondos:gestion_solicitudes' %}">Gestionar nómina</a>
+
+                            <a
+                                class="nav-link"
+                                href="{% url 'fondos:gestion_solicitudes' %}"
+                            >
+                                Gestionar nómina
+                            </a>
+
                         </li>
+
                     {% endif %}
+
+
+                    <!-- SALIR -->
+
                     <li class="nav-item">
-                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+
+                        <form
+                            method="post"
+                            action="{% url 'logout' %}"
+                            class="d-inline"
+                        >
+
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-link nav-link border-0">Salir</button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-link nav-link border-0"
+                            >
+                                Salir
+                            </button>
+
                         </form>
+
                     </li>
+
+
                 {% else %}
+
+                    <!-- INGRESAR -->
+
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Ingresar</a>
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'login' %}"
+                        >
+                            Ingresar
+                        </a>
+
                     </li>
+
                 {% endif %}
 
             </ul>
@@ -896,15 +951,32 @@
 <main>
 
     {% if messages %}
+
         <div class="container pt-3">
+
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+
+                <div
+                    class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                    role="alert"
+                >
+
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                    ></button>
+
                 </div>
+
             {% endfor %}
+
         </div>
+
     {% endif %}
+
 
     {% block content %}
     {% endblock %}
@@ -971,7 +1043,7 @@
 
                 <p>
 
-                    <a href="{% url 'combos:lista' %}">
+                    <a href="{% url 'combos:lista_combos' %}">
                         Promociones
                     </a>
 
@@ -1015,6 +1087,7 @@
                 </p>
 
             </div>
+
 
         </div>
 

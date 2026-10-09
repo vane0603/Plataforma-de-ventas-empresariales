@@ -12,6 +12,10 @@ from .models import Carrito, CarritoItem
 SESSION_CARRITO_ID = "carrito_id"
 
 
+# ==========================================================
+# FUSIONAR CARRITO DE INVITADO CON CARRITO DEL USUARIO
+# ==========================================================
+
 def _fusionar_carrito_invitado(request, carrito_usuario):
 
     carrito_id = request.session.get(
@@ -54,7 +58,6 @@ def _fusionar_carrito_invitado(request, carrito_usuario):
 
         return carrito_usuario
 
-
     with transaction.atomic():
 
         for item in carrito_invitado.items.select_related(
@@ -62,6 +65,10 @@ def _fusionar_carrito_invitado(request, carrito_usuario):
             "presentacion__presentacion",
             "combo",
         ):
+
+            # ==================================================
+            # COMBO
+            # ==================================================
 
             if item.combo_id:
 
@@ -77,6 +84,10 @@ def _fusionar_carrito_invitado(request, carrito_usuario):
                     )
                 )
 
+            # ==================================================
+            # PRODUCTO NORMAL
+            # ==================================================
+
             else:
 
                 item_usuario, created = (
@@ -91,6 +102,10 @@ def _fusionar_carrito_invitado(request, carrito_usuario):
                     )
                 )
 
+            # ==================================================
+            # SI YA EXISTÍA
+            # ==================================================
+
             if not created:
 
                 nueva_cantidad = (
@@ -99,6 +114,7 @@ def _fusionar_carrito_invitado(request, carrito_usuario):
                     item.cantidad
                 )
 
+                # Control de stock para combos
                 if (
                     item_usuario.combo_id
                     and
@@ -141,7 +157,15 @@ def _fusionar_carrito_invitado(request, carrito_usuario):
     return carrito_usuario
 
 
+# ==========================================================
+# OBTENER CARRITO
+# ==========================================================
+
 def obtener_carrito(request):
+
+    # ======================================================
+    # USUARIO AUTENTICADO
+    # ======================================================
 
     if request.user.is_authenticated:
 
@@ -157,6 +181,10 @@ def obtener_carrito(request):
             request,
             carrito,
         )
+
+    # ======================================================
+    # USUARIO INVITADO
+    # ======================================================
 
     if not request.session.session_key:
         request.session.create()
@@ -177,6 +205,10 @@ def obtener_carrito(request):
 
     return carrito
 
+
+# ==========================================================
+# DETALLE DEL CARRITO
+# ==========================================================
 
 def detalle_carrito(request):
 
@@ -205,6 +237,10 @@ def detalle_carrito(request):
         },
     )
 
+
+# ==========================================================
+# AGREGAR PRODUCTO NORMAL
+# ==========================================================
 
 @require_POST
 def agregar_al_carrito(
@@ -284,6 +320,10 @@ def agregar_al_carrito(
     )
 
 
+# ==========================================================
+# AGREGAR COMBO
+# ==========================================================
+
 @require_POST
 def agregar_combo(
     request,
@@ -296,6 +336,10 @@ def agregar_combo(
         activo=True,
     )
 
+    # ======================================================
+    # VALIDAR STOCK
+    # ======================================================
+
     if combo.stock < 1:
 
         messages.warning(
@@ -304,9 +348,13 @@ def agregar_combo(
         )
 
         return redirect(
-            "combos:detalle",
+            "combos:detalle_combo",
             pk=combo.id,
         )
+
+    # ======================================================
+    # CANTIDAD
+    # ======================================================
 
     try:
 
@@ -326,9 +374,17 @@ def agregar_combo(
         1,
     )
 
+    # ======================================================
+    # OBTENER CARRITO
+    # ======================================================
+
     carrito = obtener_carrito(
         request
     )
+
+    # ======================================================
+    # CREAR / ACTUALIZAR COMBO
+    # ======================================================
 
     with transaction.atomic():
 
@@ -338,16 +394,18 @@ def agregar_combo(
                 combo=combo,
                 defaults={
                     "presentacion": None,
-
                     "cantidad": min(
                         cantidad,
                         combo.stock,
                     ),
-
                     "precio_unitario": combo.precio,
                 },
             )
         )
+
+        # ==================================================
+        # EL COMBO YA ESTABA EN EL CARRITO
+        # ==================================================
 
         if not created:
 
@@ -359,9 +417,7 @@ def agregar_combo(
 
             if nueva_cantidad > combo.stock:
 
-                item.cantidad = (
-                    combo.stock
-                )
+                item.cantidad = combo.stock
 
                 messages.warning(
                     request,
@@ -370,13 +426,10 @@ def agregar_combo(
 
             else:
 
-                item.cantidad = (
-                    nueva_cantidad
-                )
+                item.cantidad = nueva_cantidad
 
-            item.precio_unitario = (
-                combo.precio
-            )
+            # Actualizar precio
+            item.precio_unitario = combo.precio
 
             item.save(
                 update_fields=[
@@ -386,15 +439,27 @@ def agregar_combo(
                 ]
             )
 
+    # ======================================================
+    # MENSAJE
+    # ======================================================
+
     messages.success(
         request,
         f"{combo.nombre} fue agregado al carrito.",
     )
 
+    # ======================================================
+    # IR AL CARRITO
+    # ======================================================
+
     return redirect(
         "carrito:detalle"
     )
 
+
+# ==========================================================
+# ACTUALIZAR ITEM
+# ==========================================================
 
 @require_POST
 def actualizar_item(
@@ -428,6 +493,9 @@ def actualizar_item(
 
         cantidad = 1
 
+    # ======================================================
+    # ELIMINAR SI ES MENOR A 1
+    # ======================================================
 
     if cantidad < 1:
 
@@ -442,6 +510,9 @@ def actualizar_item(
             "carrito:detalle"
         )
 
+    # ======================================================
+    # VALIDAR COMBO
+    # ======================================================
 
     if item.combo_id:
 
@@ -473,15 +544,16 @@ def actualizar_item(
 
         if cantidad > item.combo.stock:
 
-            cantidad = (
-                item.combo.stock
-            )
+            cantidad = item.combo.stock
 
             messages.warning(
                 request,
                 f"La cantidad fue ajustada a {item.combo.stock}.",
             )
 
+    # ======================================================
+    # ACTUALIZAR
+    # ======================================================
 
     item.cantidad = cantidad
 
@@ -506,6 +578,10 @@ def actualizar_item(
         "carrito:detalle"
     )
 
+
+# ==========================================================
+# ELIMINAR ITEM
+# ==========================================================
 
 @require_POST
 def eliminar_item(
@@ -534,6 +610,10 @@ def eliminar_item(
         "carrito:detalle"
     )
 
+
+# ==========================================================
+# VACIAR CARRITO
+# ==========================================================
 
 @require_POST
 def vaciar_carrito(request):

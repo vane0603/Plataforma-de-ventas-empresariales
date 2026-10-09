@@ -11,13 +11,13 @@ urlpatterns = [
     path(
         "",
         views.lista_combos,
-        name="lista",
+        name="lista_combos",
     ),
 
     path(
         "<int:pk>/",
         views.detalle_combo,
-        name="detalle",
+        name="detalle_combo",
     ),
 
 ]

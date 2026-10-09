@@ -1,0 +1,283 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ combo.nombre }} | ECOMMERCE PRO</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7f9;
+            color: #222;
+        }
+
+        .contenedor {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+        .volver {
+            display: inline-block;
+            margin-bottom: 25px;
+            color: #1f6f43;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .volver:hover {
+            text-decoration: underline;
+        }
+
+        .producto {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .imagen-contenedor {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            background: #f8f8f8;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .imagen-contenedor img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .sin-imagen {
+            color: #888;
+            font-size: 18px;
+        }
+
+        .informacion {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .codigo {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .nombre {
+            font-size: 38px;
+            margin-bottom: 20px;
+            color: #1f6f43;
+        }
+
+        .descripcion {
+            font-size: 17px;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .precio-anterior {
+            font-size: 18px;
+            color: #999;
+            text-decoration: line-through;
+            margin-bottom: 5px;
+        }
+
+        .precio {
+            font-size: 38px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 25px;
+        }
+
+        .stock {
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        .disponible {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .agotado {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .boton {
+            display: inline-block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #1f6f43;
+            color: white;
+            text-align: center;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .boton:hover {
+            background: #155a35;
+        }
+
+        .boton-deshabilitado {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+
+        .destacado {
+            display: inline-block;
+            width: fit-content;
+            margin-bottom: 15px;
+            padding: 7px 14px;
+            background: #f0c419;
+            color: #222;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+
+            .producto {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 25px;
+            }
+
+            .nombre {
+                font-size: 30px;
+            }
+
+            .precio {
+                font-size: 30px;
+            }
+
+            .imagen-contenedor {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="contenedor">
+
+        <a href="{% url 'combos:lista_combos' %}" class="volver">
+            ← Volver a los combos
+        </a>
+
+        <section class="producto">
+
+            <div class="imagen-contenedor">
+
+                {% if combo.imagen %}
+                    <img
+                        src="{{ combo.imagen.url }}"
+                        alt="{{ combo.nombre }}"
+                    >
+                {% else %}
+                    <span class="sin-imagen">
+                        Este combo no tiene imagen disponible
+                    </span>
+                {% endif %}
+
+            </div>
+
+
+            <div class="informacion">
+
+                {% if combo.destacado %}
+                    <span class="destacado">
+                        ⭐ COMBO DESTACADO
+                    </span>
+                {% endif %}
+
+                <p class="codigo">
+                    Código: {{ combo.codigo }}
+                </p>
+
+                <h1 class="nombre">
+                    {{ combo.nombre }}
+                </h1>
+
+                {% if combo.descripcion %}
+                    <p class="descripcion">
+                        {{ combo.descripcion }}
+                    </p>
+                {% endif %}
+
+                {% if combo.precio_anterior %}
+                    <p class="precio-anterior">
+                        ${{ combo.precio_anterior|floatformat:0 }}
+                    </p>
+                {% endif %}
+
+                <p class="precio">
+                    ${{ combo.precio|floatformat:0 }}
+                </p>
+
+                <div class="stock">
+
+                    {% if combo.stock > 0 %}
+                        <span class="disponible">
+                            ✓ Disponible
+                        </span>
+                    {% else %}
+                        <span class="agotado">
+                            ✕ Agotado
+                        </span>
+                    {% endif %}
+
+                </div>
+
+                {% if combo.stock > 0 %}
+
+                    <button class="boton" type="button">
+                        AGREGAR AL CARRITO
+                    </button>
+
+                {% else %}
+
+                    <button
+                        class="boton boton-deshabilitado"
+                        type="button"
+                        disabled
+                    >
+                        PRODUCTO AGOTADO
+                    </button>
+
+                {% endif %}
+
+            </div>
+            
+        </section>
+
+    </main>
+
+</body>
+</html>

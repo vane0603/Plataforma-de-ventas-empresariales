@@ -1,127 +1,111 @@
 from django.conf import settings
-from django.db import models
-from django.utils import timezone
+from django.core.mail import send_mail
 
 
-class FondoEmpleado(models.Model):
-    nombre = models.CharField(max_length=200, unique=True)
-    nit = models.CharField(max_length=50, blank=True)
-    correo = models.EmailField(blank=True)
-    telefono = models.CharField(max_length=50, blank=True)
-    responsable = models.CharField(max_length=200, blank=True)
-    gestores = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name="fondos_gestionados",
-        blank=True,
-        help_text="Usuarios autorizados para revisar solicitudes de este fondo.",
-    )
-    activo = models.BooleanField(default=True)
-    observaciones = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+def notificar_fondo_nueva_solicitud(solicitud):
+    """
+    Notifica a los gestores del fondo que existe
+    una nueva solicitud de descuento por nómina.
+    """
 
-    class Meta:
-        verbose_name = "Fondo de empleados"
-        verbose_name_plural = "Fondos de empleados"
-        ordering = ["nombre"]
-
-    def __str__(self):
-        return self.nombre
-
-
-class SolicitudDescuentoNomina(models.Model):
-    ESTADO_PENDIENTE = "PENDIENTE"
-    ESTADO_APROBADA = "APROBADA"
-    ESTADO_APROBADA_PARCIAL = "APROBADA_PARCIAL"
-    ESTADO_RECHAZADA = "RECHAZADA"
-
-    ESTADOS = [
-        (ESTADO_PENDIENTE, "Pendiente"),
-        (ESTADO_APROBADA, "Aprobada"),
-        (ESTADO_APROBADA_PARCIAL, "Aprobada parcialmente"),
-        (ESTADO_RECHAZADA, "Rechazada"),
-    ]
-
-    usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="solicitudes_nomina",
-    )
-    fondo = models.ForeignKey(
-        FondoEmpleado,
-        on_delete=models.PROTECT,
-        related_name="solicitudes",
-    )
-    pedido = models.OneToOneField(
-        "pedidos.Pedido",
-        on_delete=models.PROTECT,
-        related_name="solicitud_nomina",
-        null=True,
-        blank=True,
+    gestores = solicitud.fondo.gestores.filter(
+        is_active=True
+    ).exclude(
+        email=""
     )
 
-    nombre_completo = models.CharField(max_length=200)
-    documento = models.CharField(max_length=50)
-    telefono = models.CharField(max_length=50, blank=True)
-    correo = models.EmailField(blank=True)
-    empresa = models.CharField(max_length=200, default="Tío Campo")
-    numero_afiliado = models.CharField(max_length=100, blank=True)
-
-    valor_solicitado = models.DecimalField(max_digits=12, decimal_places=2)
-    vinculacion_validada = models.BooleanField(
-        null=True,
-        blank=True,
-        verbose_name="¿Trabaja/está afiliado con la entidad?",
+    destinatarios = list(
+        gestores.values_list("email", flat=True)
     )
-    valor_aprobado = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        blank=True,
-        null=True,
+
+    if not destinatarios:
+        return
+
+    asunto = f"Nueva solicitud de descuento por nómina #{solicitud.id}"
+
+    mensaje = (
+        f"Se ha recibido una nueva solicitud de descuento por nómina.\n\n"
+        f"Solicitante: {solicitud.nombre_completo}\n"
+        f"Documento: {solicitud.documento}\n"
+        f"Empresa: {solicitud.empresa}\n"
+        f"Teléfono: {solicitud.telefono}\n"
+        f"Correo: {solicitud.correo}\n"
+        f"Valor solicitado: ${solicitud.valor_solicitado:,.2f}\n"
+        f"Fondo: {solicitud.fondo.nombre}\n"
     )
-    cupo_disponible_reportado = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        blank=True,
-        null=True,
+
+    if solicitud.numero_afiliado:
+        mensaje += (
+            f"Número de afiliado: "
+            f"{solicitud.numero_afiliado}\n"
+        )
+
+    if solicitud.observaciones_usuario:
+        mensaje += (
+            f"\nObservaciones del usuario:\n"
+            f"{solicitud.observaciones_usuario}\n"
+        )
+
+    mensaje += (
+        "\nPor favor, ingrese al sistema para revisar "
+        "y gestionar esta solicitud.\n"
     )
-    respuesta_fondo = models.TextField(blank=True)
-    observaciones_usuario = models.TextField(blank=True)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default=ESTADO_PENDIENTE)
-    fecha_solicitud = models.DateTimeField(auto_now_add=True)
-    fecha_respuesta = models.DateTimeField(blank=True, null=True)
-    referencia_fondo = models.CharField(max_length=100, blank=True)
 
-    class Meta:
-        verbose_name = "Solicitud de descuento por nómina"
-        verbose_name_plural = "Solicitudes de descuento por nómina"
-        ordering = ["-fecha_solicitud"]
+    send_mail(
+        asunto,
+        mensaje,
+        settings.DEFAULT_FROM_EMAIL,
+        destinatarios,
+        fail_silently=True,
+    )
 
-    def __str__(self):
-        return f"Solicitud #{self.id} - {self.nombre_completo}"
 
-    def sincronizar_estado_pedido(self):
-        if not self.pedido_id:
-            return
+def notificar_usuario_respuesta(solicitud):
+    """
+    Envía una notificación al usuario cuando se responde
+    una solicitud de descuento por nómina.
+    """
 
-        from apps.pedidos.models import Pedido
+    if not solicitud.correo:
+        return
 
-        mapa = {
-            self.ESTADO_PENDIENTE: Pedido.ESTADO_EN_REVISION_NOMINA,
-            self.ESTADO_APROBADA: Pedido.ESTADO_APROBADO_NOMINA,
-            self.ESTADO_APROBADA_PARCIAL: Pedido.ESTADO_APROBADO_PARCIAL,
-            self.ESTADO_RECHAZADA: Pedido.ESTADO_RECHAZADO_NOMINA,
-        }
-        estado_pedido = mapa.get(self.estado)
-        if estado_pedido and self.pedido.estado != estado_pedido:
-            Pedido.objects.filter(pk=self.pedido_id).update(estado=estado_pedido)
-            self.pedido.estado = estado_pedido
+    asunto = f"Respuesta a solicitud #{solicitud.id}"
 
-    def save(self, *args, **kwargs):
-        if self.estado != self.ESTADO_PENDIENTE and not self.fecha_respuesta:
-            self.fecha_respuesta = timezone.now()
-        elif self.estado == self.ESTADO_PENDIENTE:
-            self.fecha_respuesta = None
+    mensaje = (
+        f"Hola {solicitud.nombre_completo},\n\n"
+        f"Su solicitud de descuento por nómina ha sido actualizada.\n\n"
+        f"Estado: {solicitud.get_estado_display()}\n"
+    )
 
-        super().save(*args, **kwargs)
-        self.sincronizar_estado_pedido()
+    if solicitud.respuesta_fondo:
+        mensaje += (
+            f"\nRespuesta del fondo:\n"
+            f"{solicitud.respuesta_fondo}\n"
+        )
+
+    if solicitud.valor_aprobado is not None:
+        mensaje += (
+            f"\nValor aprobado: "
+            f"${solicitud.valor_aprobado:,.2f}\n"
+        )
+
+    if solicitud.cupo_disponible_reportado is not None:
+        mensaje += (
+            f"Cupo disponible reportado: "
+            f"${solicitud.cupo_disponible_reportado:,.2f}\n"
+        )
+
+    mensaje += (
+        "\nSi tiene alguna inquietud, comuníquese con "
+        "el área correspondiente.\n\n"
+        "Cordialmente,\n"
+        "Equipo de atención"
+    )
+
+    send_mail(
+        asunto,
+        mensaje,
+        settings.DEFAULT_FROM_EMAIL,
+        [solicitud.correo],
+        fail_silently=True,
+    )
