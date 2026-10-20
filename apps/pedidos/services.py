@@ -26,7 +26,7 @@ class PedidoError(Exception):
 
 
 def crear_pedido_desde_carrito(
-    *, carrito, usuario, metodo_pago, direccion, ciudad, observaciones="", contacto=None
+    *, carrito, usuario, metodo_pago, direccion, ciudad, observaciones="", contacto=None, autoriza_datos=False
 ):
     """
     `usuario` puede ser None (compra como invitado) salvo con descuento por nómina.
@@ -41,6 +41,8 @@ def crear_pedido_desde_carrito(
         raise PedidoError("Para pagar con descuento por nómina debes iniciar sesión.")
     if usuario is None and not (contacto.get("nombre") and contacto.get("correo")):
         raise PedidoError("Escribe tu nombre y correo para continuar.")
+    if usuario is None and not autoriza_datos:
+        raise PedidoError("Debes autorizar el tratamiento de tus datos para continuar.")
     # Con nómina la dirección la define la finca elegida en la solicitud.
     if metodo_pago != Pedido.METODO_NOMINA:
         if not direccion:
@@ -121,6 +123,11 @@ def crear_pedido_desde_carrito(
 
         carrito.activo = False
         carrito.save(update_fields=["activo", "updated_at"])
+
+        if usuario is None:
+            from apps.cuentas.models import AutorizacionDatos, registrar_autorizacion
+
+            registrar_autorizacion(AutorizacionDatos.ORIGEN_CHECKOUT, pedido=pedido)
 
         transaction.on_commit(lambda: notificar_pedido_creado(pedido))
 

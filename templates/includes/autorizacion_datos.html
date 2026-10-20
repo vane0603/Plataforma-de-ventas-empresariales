@@ -1,0 +1,14 @@
+{# Casilla de autorización de tratamiento de datos (Ley 1581 de 2012). Parámetro: campo #}
+<div class="form-check mt-3">
+  <input class="form-check-input" type="checkbox" name="{{ campo.html_name }}" id="{{ campo.id_for_label }}" value="on"
+         {% if campo.value %}checked{% endif %} data-autorizacion>
+  <label class="form-check-label small" for="{{ campo.id_for_label }}">
+    <strong>Autorizo</strong> a {{ RESPONSABLE_DATOS.razon_social }} para tratar mis datos personales
+    (nombre, correo, celular y dirección) con el fin de gestionar mis compras, pagos y entregas y
+    contactarme sobre mis pedidos, conforme a la
+    <a href="{% url 'politica_datos' %}" target="_blank" rel="noopener">Política de tratamiento de datos personales</a>
+    (versión {{ POLITICA_DATOS_VERSION }}). Puedo conocer, actualizar, rectificar o suprimir mis datos y revocar
+    esta autorización escribiendo a {{ RESPONSABLE_DATOS.correo }}.
+  </label>
+  {% for error in campo.errors %}<div class="tc-error text-danger small mt-1">{{ error }}</div>{% endfor %}
+</div>

@@ -130,6 +130,9 @@ class CheckoutSerializer(serializers.Serializer):
     nombre = serializers.CharField(required=False, help_text="Obligatorio sin sesión.")
     correo = serializers.EmailField(required=False, help_text="Obligatorio sin sesión.")
     telefono = serializers.CharField(required=False, help_text="Obligatorio sin sesión.")
+    autoriza_tratamiento = serializers.BooleanField(
+        required=False, help_text="Obligatorio sin sesión: autorización de datos (Ley 1581)."
+    )
 
 
 # ---------------------------------------------------------------- Nómina

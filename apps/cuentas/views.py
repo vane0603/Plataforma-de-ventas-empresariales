@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import RegistroForm
+from .models import AutorizacionDatos, registrar_autorizacion
 
 
 def registro(request):
@@ -17,6 +18,7 @@ def registro(request):
     form = RegistroForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         usuario = form.save()
+        registrar_autorizacion(AutorizacionDatos.ORIGEN_REGISTRO, usuario=usuario)
         login(request, usuario, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, "Tu cuenta fue creada. ¡Bienvenido a Tío Campo!")
         return redirect(siguiente or "dashboard")

@@ -62,6 +62,7 @@ def checkout(request):
                     ciudad=form.cleaned_data["ciudad"].strip(),
                     observaciones=form.cleaned_data["observaciones"].strip(),
                     contacto=form.datos_contacto(),
+                    autoriza_datos=form.cleaned_data["autoriza_tratamiento"],
                 )
             except PedidoError as exc:
                 messages.error(request, str(exc))

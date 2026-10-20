@@ -18,6 +18,8 @@ class CheckoutForm(forms.Form):
     direccion_entrega = forms.CharField(label="Dirección de entrega", max_length=250, required=False)
     ciudad = forms.CharField(label="Ciudad", max_length=120, initial="Bogotá", required=False)
     observaciones = forms.CharField(label="Observaciones", required=False, widget=forms.Textarea)
+    # Obligatoria para invitados (los usuarios autorizaron al crear su cuenta).
+    autoriza_tratamiento = forms.BooleanField(label="Autorizo el tratamiento de mis datos", required=False)
     metodo_pago = forms.ChoiceField(
         label="Medio de pago",
         choices=Pedido.METODOS_PAGO,
@@ -56,6 +58,8 @@ class CheckoutForm(forms.Form):
                 self.add_error("correo", "Escribe tu correo para enviarte la confirmación.")
             if not datos.get("telefono"):
                 self.add_error("telefono", "Escribe tu celular para contactarte.")
+            if not datos.get("autoriza_tratamiento"):
+                self.add_error("autoriza_tratamiento", "Debes autorizar el tratamiento de tus datos para continuar.")
         return datos
 
     def datos_contacto(self):

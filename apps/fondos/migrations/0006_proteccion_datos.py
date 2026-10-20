@@ -33,6 +33,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # 0. La restricción única usa "documento"; se quita antes de convertirlo
+        #    en texto (MySQL no permite índices sobre columnas TEXT sin longitud).
+        migrations.RemoveConstraint(
+            model_name="afiliadofondo",
+            name="afiliado_documento_unico_por_fondo",
+        ),
         # 1. Columnas de texto amplio para guardar el valor cifrado.
         migrations.AlterField(
             model_name="afiliadofondo",
@@ -50,10 +56,6 @@ class Migration(migrations.Migration):
             field=apps.core.campos.TextoCifrado(blank=True),
         ),
         # 2. Huellas de búsqueda.
-        migrations.RemoveConstraint(
-            model_name="afiliadofondo",
-            name="afiliado_documento_unico_por_fondo",
-        ),
         migrations.AddField(
             model_name="afiliadofondo",
             name="documento_huella",

@@ -62,6 +62,7 @@ class RegistroTest(TestCase):
                 "email": "ana@example.com",
                 "password1": "UnaClaveSegura#2026",
                 "password2": "UnaClaveSegura#2026",
+                "autoriza_tratamiento": "on",
             },
         )
         self.assertRedirects(respuesta, reverse("dashboard"))
@@ -85,6 +86,7 @@ class CompraInvitadoTest(TestCase):
             "nombre": "Ana Pérez",
             "correo": "ana@example.com",
             "telefono": "300 123 4567",
+            "autoriza_tratamiento": "on",
             "direccion_entrega": "Calle 10 # 5-20",
             "ciudad": "Bogotá",
             "metodo_pago": Pedido.METODO_ELECTRONICO,

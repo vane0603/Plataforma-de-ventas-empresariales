@@ -130,6 +130,7 @@ class PedidosApiTest(ApiBase):
         respuesta = self.api.post(reverse("api:pedidos"), {
             "metodo_pago": "ELECTRONICO", "direccion_entrega": "Calle 1", "ciudad": "Bogotá",
             "nombre": "Ana Pérez", "correo": "ana@example.com", "telefono": "3001234567",
+            "autoriza_tratamiento": True,
         }, format="json")
         self.assertEqual(respuesta.status_code, 201, respuesta.content)
         pedido = respuesta.json()
