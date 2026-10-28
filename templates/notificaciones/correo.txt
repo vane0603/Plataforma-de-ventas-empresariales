@@ -1,0 +1,18 @@
+{% autoescape off %}{{ m.saludo }}
+
+{% for p in m.parrafos %}{{ p }}
+
+{% endfor %}{% for linea in m.items %}- {{ linea }}
+{% endfor %}{% if m.items %}
+{% endif %}{% for etiqueta, valor in m.detalle %}{{ etiqueta }}: {{ valor }}
+{% endfor %}{% if m.detalle %}
+{% endif %}{% if m.nota %}{{ m.nota }}
+
+{% endif %}{% if m.boton_url %}{{ m.boton_texto }}: {{ m.boton_url }}
+
+{% endif %}Gracias por comprar en Tío Campo.
+
+--
+Recibes este mensaje por tu pedido en Tío Campo.
+Política de tratamiento de datos: {{ politica_url }}
+{% endautoescape %}

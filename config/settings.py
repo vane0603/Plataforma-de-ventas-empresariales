@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "apps.pedidos",
     "apps.cuentas",
     "apps.pagos",
+    "apps.notificaciones",
     "apps.api",
 
     # API REST
@@ -483,6 +484,21 @@ WOMPI_INTEGRITY_SECRET = os.getenv("WOMPI_INTEGRITY_SECRET", "")
 WOMPI_EVENTS_SECRET = os.getenv("WOMPI_EVENTS_SECRET", "")
 WOMPI_API_URL = os.getenv("WOMPI_API_URL", "https://sandbox.wompi.co/v1")
 WOMPI_CHECKOUT_URL = os.getenv("WOMPI_CHECKOUT_URL", "https://checkout.wompi.co/p/")
+
+# =====================================================
+# NOTIFICACIONES (correo siempre; WhatsApp cuando haya llaves)
+# =====================================================
+
+NOTIFICACIONES_TIMEOUT = int(os.getenv("NOTIFICACIONES_TIMEOUT", "10"))
+
+# WhatsApp Cloud API (Meta for Developers -> tu app -> WhatsApp -> Configuración de la API).
+# Vacíos = WhatsApp desactivado. NUNCA suba el token al repositorio.
+WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_API_VERSION = os.getenv("WHATSAPP_API_VERSION", "v22.0")
+# Idioma con el que se aprobaron las plantillas en WhatsApp Manager.
+WHATSAPP_IDIOMA = os.getenv("WHATSAPP_IDIOMA", "es")
+WHATSAPP_INDICATIVO_PAIS = os.getenv("WHATSAPP_INDICATIVO_PAIS", "57")
 
 # =====================================================
 # SEGURIDAD EN PRODUCCIÓN

@@ -5,14 +5,13 @@ para que la misma lógica sirva a una API, tareas en segundo plano o al admin.
 
 import logging
 
-from django.conf import settings
-from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import F
-from django.urls import reverse
 from django.utils import timezone
 
 from apps.carrito.models import Carrito
+from apps.notificaciones.models import Notificacion
+from apps.notificaciones.services import notificar
 from apps.promociones.models import Combo
 
 from .models import Pedido, PedidoItem
@@ -26,7 +25,8 @@ class PedidoError(Exception):
 
 
 def crear_pedido_desde_carrito(
-    *, carrito, usuario, metodo_pago, direccion, ciudad, observaciones="", contacto=None, autoriza_datos=False
+    *, carrito, usuario, metodo_pago, direccion, ciudad, observaciones="", contacto=None, autoriza_datos=False,
+    avisos_whatsapp=False,
 ):
     """
     `usuario` puede ser None (compra como invitado) salvo con descuento por nómina.
@@ -104,6 +104,7 @@ def crear_pedido_desde_carrito(
             nombre_contacto=contacto.get("nombre", "")[:150],
             correo_contacto=contacto.get("correo", ""),
             telefono_contacto=contacto.get("telefono", "")[:30],
+            avisos_whatsapp=bool(avisos_whatsapp),
         )
 
         PedidoItem.objects.bulk_create([
@@ -135,37 +136,8 @@ def crear_pedido_desde_carrito(
 
 
 def notificar_pedido_creado(pedido):
-    """Confirmación por correo con el enlace para consultar el pedido (sirve a invitados)."""
-    correo = pedido.correo_notificacion
-    if not correo:
-        return
-    enlace = settings.PUBLIC_BASE_URL.rstrip("/") + reverse(
-        "pedidos:seguimiento", args=[pedido.codigo_acceso]
-    )
-    aviso_entrega = (
-        "La fecha de entrega se acuerda con tu fondo de empleados."
-        if pedido.metodo_pago == Pedido.METODO_NOMINA
-        else "Te contactaremos para coordinar la entrega."
-    )
-    lineas = "\n".join(
-        f"- {item.cantidad} x {item.producto_nombre} ({item.presentacion}): ${item.subtotal:,.0f}"
-        for item in pedido.items.all()
-    )
-    send_mail(
-        f"Recibimos tu pedido {pedido.numero}",
-        (
-            f"Hola {pedido.nombre_cliente},\n\n"
-            f"Recibimos tu pedido {pedido.numero}.\n\n{lineas}\n\n"
-            f"Total: ${pedido.total:,.0f}\n"
-            f"Medio de pago: {pedido.get_metodo_pago_display()}\n\n"
-            f"{aviso_entrega}\n\n"
-            f"Consulta tu pedido aquí: {enlace}\n\n"
-            "Gracias por comprar en Tío Campo."
-        ),
-        settings.DEFAULT_FROM_EMAIL,
-        [correo],
-        fail_silently=True,
-    )
+    """Confirmación con el enlace para consultar el pedido (sirve a invitados)."""
+    notificar(Notificacion.EVENTO_PEDIDO_CREADO, pedido=pedido)
 
 
 def cancelar_pedido(pedido, usuario=None):

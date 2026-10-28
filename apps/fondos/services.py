@@ -21,6 +21,8 @@ from django.utils import timezone
 
 from .models import AfiliadoFondo, HistorialSolicitud, SolicitudDescuentoNomina
 from apps.core.cifrado import huella
+from apps.notificaciones.models import Notificacion
+from apps.notificaciones.services import notificar
 
 from .verificacion import calcular_decision, normalizar_documento, obtener_verificador
 
@@ -421,36 +423,11 @@ def notificar_fondo_nueva_solicitud(solicitud):
 
 
 def notificar_usuario_respuesta(solicitud):
-    correo = solicitud.correo or solicitud.usuario.email
-    if not correo:
-        return
-
     S = SolicitudDescuentoNomina
-    mensaje = (
-        f"Hola {solicitud.nombre_completo},\n\n"
-        f"Tu solicitud de descuento por nómina #{solicitud.id} fue respondida.\n\n"
-        f"Resultado: {solicitud.get_estado_display()}\n"
-        f"Valor solicitado: ${solicitud.valor_solicitado:,.0f}\n"
-        f"Valor aprobado: ${(solicitud.valor_aprobado or 0):,.0f}\n"
-    )
-    if solicitud.respuesta_fondo:
-        mensaje += f"\nRespuesta del fondo:\n{solicitud.respuesta_fondo}\n"
-    if solicitud.estado == S.ESTADO_APROBADA_PARCIAL:
-        saldo = solicitud.valor_solicitado - solicitud.valor_aprobado
-        mensaje += (
-            f"\nQueda un saldo de ${saldo:,.0f}. Puedes pagarlo con otro medio "
-            "o cancelar el pedido desde la plataforma.\n"
-        )
-    elif solicitud.estado == S.ESTADO_RECHAZADA:
-        mensaje += "\nPuedes pagar el pedido con otro medio de pago o cancelarlo desde la plataforma.\n"
-    if solicitud.pedido_id:
-        mensaje += f"\nVer pedido: {_url_absoluta('pedidos:confirmacion', solicitud.pedido_id)}\n"
-    mensaje += "\nCordialmente,\nEquipo Tío Campo"
-
-    send_mail(
-        f"Respuesta a tu solicitud de nómina #{solicitud.id}",
-        mensaje,
-        settings.DEFAULT_FROM_EMAIL,
-        [correo],
-        fail_silently=True,
-    )
+    evento = {
+        S.ESTADO_APROBADA: Notificacion.EVENTO_NOMINA_APROBADA,
+        S.ESTADO_APROBADA_PARCIAL: Notificacion.EVENTO_NOMINA_PARCIAL,
+        S.ESTADO_RECHAZADA: Notificacion.EVENTO_NOMINA_RECHAZADA,
+    }.get(solicitud.estado)
+    if evento:
+        notificar(evento, solicitud=solicitud)

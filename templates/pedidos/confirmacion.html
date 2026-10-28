@@ -5,6 +5,11 @@
   <div class="product-card p-4 p-md-5">
     <h1 class="section-title">Pedido {{ pedido.numero }}</h1>
     <p class="text-muted">Estado: <strong>{{ pedido.get_estado_display }}</strong> · Medio de pago: {{ pedido.get_metodo_pago_display }}{% if pedido.metodo_pago_saldo %} + {{ pedido.get_metodo_pago_saldo_display }} (saldo){% endif %}</p>
+    {% if pedido.en_camino %}
+      <div class="alert alert-info d-flex align-items-center gap-2"><i class="bi bi-truck fs-4"></i>
+        <div><strong>Tu pedido va en camino.</strong> Salió para entrega el {{ pedido.despachado_en|date:"d/m/Y" }} a las {{ pedido.despachado_en|date:"H:i" }}.</div>
+      </div>
+    {% endif %}
 
     <div class="table-responsive mt-4"><table class="table align-middle">
       <thead><tr><th>Producto</th><th>Presentación</th><th>Cantidad</th><th class="text-end">Subtotal</th></tr></thead>

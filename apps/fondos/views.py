@@ -30,6 +30,37 @@ from .services import (
 )
 
 
+def datos_iniciales_solicitud(usuario, pedido):
+    """
+    Precarga el formulario con lo que ya se conoce del comprador: su última solicitud
+    (si no fue anonimizada) y el celular que escribió en el checkout de este pedido.
+    """
+    inicial = {
+        "nombre_completo": usuario.get_full_name() or usuario.username,
+        "correo": usuario.email,
+    }
+    anterior = (
+        SolicitudDescuentoNomina.objects
+        .filter(usuario=usuario, anonimizada_en__isnull=True)
+        .select_related("fondo", "finca")
+        .order_by("-fecha_solicitud")
+        .first()
+    )
+    if anterior is not None:
+        for campo in ("nombre_completo", "correo", "documento", "telefono", "empresa", "numero_afiliado"):
+            valor = getattr(anterior, campo)
+            if valor:
+                inicial[campo] = valor
+        if anterior.fondo.activo:
+            inicial["fondo"] = anterior.fondo_id
+            if anterior.finca_id and anterior.finca.activo:
+                inicial["finca"] = anterior.finca_id
+    # El celular de este pedido es el dato más reciente.
+    if pedido.telefono_contacto:
+        inicial["telefono"] = pedido.telefono_contacto
+    return inicial
+
+
 @login_required
 def solicitar_descuento_nomina(request, pedido_id):
     pedido = get_object_or_404(
@@ -46,10 +77,7 @@ def solicitar_descuento_nomina(request, pedido_id):
         messages.warning(request, "Este pedido no admite una nueva solicitud de nómina.")
         return redirect("pedidos:confirmacion", pedido_id=pedido.id)
 
-    initial = {
-        "nombre_completo": request.user.get_full_name() or request.user.username,
-        "correo": request.user.email,
-    }
+    initial = datos_iniciales_solicitud(request.user, pedido)
 
     if request.method == "POST":
         form = SolicitudDescuentoNominaForm(request.POST)

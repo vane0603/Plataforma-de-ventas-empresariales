@@ -85,6 +85,21 @@ Y en el `.env`: `DB_ENGINE=django.db.backends.mysql`, `DB_NAME=tio_campo`, `DB_U
 | `python manage.py anonimizar_datos` | Borra datos personales vencidos (programar diario) |
 | `python manage.py generar_clave_cifrado` | Genera claves de cifrado |
 | `python manage.py recifrar_datos` | Vuelve a cifrar tras cambiar/rotar claves |
+| `python manage.py reenviar_notificaciones` | Reintenta los avisos fallidos (programar cada 15-30 min) |
+
+## Notificaciones al comprador
+Se avisa por **correo** (HTML) y, si se activa, por **WhatsApp** en: pedido recibido, respuesta del
+fondo (aprobada, parcial o rechazada), pago aprobado, pedido **en camino** y pedido entregado.
+
+- En **Entregas → Por entregar** el repartidor marca uno o varios pedidos como **despachados**; el
+  cliente ve "En camino" y recibe el aviso.
+- Cada envío queda en *admin → Notificaciones* (enviada / fallida, con el error). Un fallo nunca
+  detiene la compra: se reintenta con `reenviar_notificaciones` o desde el admin.
+- **WhatsApp** (WhatsApp Cloud API de Meta): se activa con `WHATSAPP_TOKEN` y
+  `WHATSAPP_PHONE_NUMBER_ID` en el `.env` y requiere crear las plantillas `tio_pedido_recibido`,
+  `tio_nomina_aprobada`, `tio_nomina_parcial`, `tio_nomina_rechazada`, `tio_pago_aprobado`,
+  `tio_pedido_en_camino` y `tio_pedido_entregado` en WhatsApp Manager. Solo se escribe a quien marcó
+  la casilla de avisos por WhatsApp en la compra.
 
 ## Estructura
 
@@ -96,6 +111,7 @@ apps/
   core/         Cifrado de datos personales
   cuentas/      Registro y autorizaciones de datos
   dashboard/    Portada, banners y menú
+  notificaciones/ Avisos al comprador por correo y WhatsApp
   fondos/       Fondos, padrón, verificación, nómina, fincas, reportes
   pagos/        Pasarela de pagos (Wompi)
   pedidos/      Checkout, pedidos y entregas con firma

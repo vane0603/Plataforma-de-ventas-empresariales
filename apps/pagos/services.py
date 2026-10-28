@@ -6,10 +6,11 @@ el estado de una transacción y marca el pedido como pagado.
 import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
 from django.db import transaction
 from django.urls import reverse
 
+from apps.notificaciones.models import Notificacion
+from apps.notificaciones.services import notificar
 from apps.pedidos.models import Pedido
 
 from .models import TransaccionPago
@@ -110,20 +111,8 @@ def aplicar_evento(evento):
 
 
 def notificar_pago_aprobado(transaccion):
-    pedido = transaccion.pedido
-    correo = pedido.correo_notificacion
-    if not correo:
-        return
-    url = settings.PUBLIC_BASE_URL.rstrip("/") + reverse("pedidos:seguimiento", args=[pedido.codigo_acceso])
-    send_mail(
-        f"Pago aprobado - pedido {pedido.numero}",
-        (
-            f"Hola {pedido.nombre_cliente},\n\n"
-            f"Recibimos tu pago de ${transaccion.monto:,.0f} para el pedido {pedido.numero}.\n"
-            f"Referencia: {transaccion.referencia}\n\n"
-            f"Ver pedido: {url}\n\nGracias por comprar en Tío Campo."
-        ),
-        settings.DEFAULT_FROM_EMAIL,
-        [correo],
-        fail_silently=True,
+    notificar(
+        Notificacion.EVENTO_PAGO_APROBADO,
+        pedido=transaccion.pedido,
+        extra={"monto": str(transaccion.monto), "referencia": transaccion.referencia},
     )

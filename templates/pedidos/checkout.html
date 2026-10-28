@@ -83,6 +83,15 @@
             {% for error in form.telefono.errors %}<div class="tc-error">{{ error }}</div>{% endfor %}
           </div>
         </div>
+        {% if whatsapp_activo %}
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" name="avisos_whatsapp" id="id_avisos_whatsapp" value="on" {% if form.avisos_whatsapp.value %}checked{% endif %}>
+            <label class="form-check-label small" for="id_avisos_whatsapp">
+              <i class="bi bi-whatsapp" style="color:#25D366"></i> Quiero recibir los avisos de mi pedido por WhatsApp
+              (aprobación del fondo, pago, despacho y entrega). Puedo pedir que no me escriban más en cualquier momento.
+            </label>
+          </div>
+        {% endif %}
         {% if not user.is_authenticated %}
           {% include "includes/autorizacion_datos.html" with campo=form.autoriza_tratamiento %}
         {% endif %}
@@ -106,15 +115,24 @@
           </div>
         </div>
         <div class="row g-3" id="tc-direccion">
-          <div class="col-md-8">
-            <label class="form-label fw-semibold" for="id_direccion">Dirección de entrega</label>
-            <input class="form-control form-control-lg" id="id_direccion" name="direccion_entrega" autocomplete="street-address" required value="{{ form.direccion_entrega.value|default:'' }}">
-            {% for error in form.direccion_entrega.errors %}<div class="tc-error">{{ error }}</div>{% endfor %}
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" for="id_departamento">Departamento</label>
+            <select class="form-select form-select-lg" id="id_departamento" name="departamento" autocomplete="address-level1" required>
+              {% for dep in departamentos %}<option value="{{ dep.nombre }}" {% if dep.nombre == departamento_sel %}selected{% endif %}>{{ dep.nombre }}</option>{% endfor %}
+            </select>
           </div>
-          <div class="col-md-4">
-            <label class="form-label fw-semibold" for="id_ciudad">Ciudad</label>
-            <input class="form-control form-control-lg" id="id_ciudad" name="ciudad" autocomplete="address-level2" required value="{{ form.ciudad.value|default:'Bogotá' }}">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" for="id_ciudad">Municipio</label>
+            <select class="form-select form-select-lg" id="id_ciudad" name="ciudad" autocomplete="address-level2" required>
+              <option value="">Selecciona el municipio</option>
+              {% for municipio in municipios_del_departamento %}<option value="{{ municipio }}" {% if municipio == municipio_sel %}selected{% endif %}>{{ municipio }}</option>{% endfor %}
+            </select>
             {% for error in form.ciudad.errors %}<div class="tc-error">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="id_direccion">Dirección de entrega</label>
+            <input class="form-control form-control-lg" id="id_direccion" name="direccion_entrega" autocomplete="street-address" required value="{{ form.direccion_entrega.value|default:'' }}" placeholder="Ej.: Carrera 1A # 8A-37, barrio, apto">
+            {% for error in form.direccion_entrega.errors %}<div class="tc-error">{{ error }}</div>{% endfor %}
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="id_observaciones">Observaciones (opcional)</label>
@@ -152,6 +170,7 @@
 {% endblock %}
 
 {% block js %}
+{{ departamentos|json_script:"tc-municipios" }}
 <script>
   // Con nómina y sin sesión, los datos de contacto no se piden aquí (se piden al iniciar sesión).
   (function () {
@@ -168,7 +187,7 @@
       document.getElementById("tc-direccion").hidden = esNomina;
       document.getElementById("tc-aviso-finca").hidden = !esNomina;
       document.getElementById("tc-aviso-general").hidden = esNomina;
-      ["id_direccion", "id_ciudad"].forEach((id) => { document.getElementById(id).required = !esNomina; });
+      ["id_direccion", "id_departamento", "id_ciudad"].forEach((id) => { document.getElementById(id).required = !esNomina; });
       contacto.hidden = nominaSinSesion;
       normal.hidden = nominaSinSesion;
       login.hidden = !nominaSinSesion;
@@ -179,6 +198,21 @@
 
     form.addEventListener("change", actualizar);
     actualizar();
+  })();
+
+  // Al cambiar el departamento se muestran solo sus municipios (DIVIPOLA del DANE).
+  (function () {
+    const datos = JSON.parse(document.getElementById("tc-municipios").textContent);
+    const departamento = document.getElementById("id_departamento");
+    const municipio = document.getElementById("id_ciudad");
+    departamento.addEventListener("change", function () {
+      const dep = datos.find((d) => d.nombre === departamento.value);
+      municipio.replaceChildren(new Option("Selecciona el municipio", ""));
+      (dep ? dep.municipios : []).forEach((nombre) => municipio.add(new Option(nombre, nombre)));
+      // Si el departamento tiene un solo municipio (p. ej. Bogotá), se elige solo.
+      if (dep && dep.municipios.length === 1) municipio.value = dep.municipios[0];
+      municipio.focus();
+    });
   })();
 </script>
 {% endblock %}

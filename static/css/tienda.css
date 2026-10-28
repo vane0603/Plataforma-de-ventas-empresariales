@@ -114,6 +114,10 @@ img { max-width: 100%; }
     font-size: 1.25rem;
 }
 .tc-logo small { display: block; font-size: .65rem; font-weight: 500; color: var(--tc-gris); letter-spacing: .4px; }
+.tc-logo__img { display: block; height: 54px; width: auto; }
+/* En el pie (fondo verde) el logo va sobre una placa blanca para que se lea el ®. */
+.tc-logo--pie { background: #fff; border-radius: 14px; padding: 8px 12px; }
+.tc-logo--pie .tc-logo__img { height: 64px; }
 
 .tc-buscador { position: relative; max-width: 640px; width: 100%; justify-self: center; }
 .tc-buscador input {
@@ -518,6 +522,7 @@ img { max-width: 100%; }
 @media (max-width: 575.98px) {
     .tc-logo { font-size: 1.15rem; }
     .tc-logo__marca { width: 34px; height: 34px; }
+    .tc-logo__img { height: 42px; }
     .tc-logo small { display: none; }
     .tc-franja__pista { grid-auto-columns: 46%; }
     .tc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }

@@ -13,6 +13,7 @@ urlpatterns = [
 
     # Entregas (repartidores)
     path("entregas/", views_entregas.entregas_lista, name="entregas"),
+    path("entregas/despachar/", views_entregas.entregas_despachar, name="entregas_despachar"),
     path("entregas/<int:pedido_id>/", views_entregas.entrega_registrar, name="entrega_registrar"),
     path("entregas/<int:pedido_id>/constancia/", views_entregas.entrega_constancia, name="entrega_constancia"),
     path("entregas/<int:pedido_id>/firma.png", views_entregas.entrega_firma, name="entrega_firma"),

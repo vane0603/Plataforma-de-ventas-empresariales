@@ -2,6 +2,8 @@ import re
 
 from django import forms
 
+from apps.core import municipios
+
 from .models import Pedido
 
 
@@ -16,10 +18,16 @@ class CheckoutForm(forms.Form):
     telefono = forms.CharField(label="Celular", max_length=30, required=False)
     # No se piden con descuento por nómina: se entrega en la finca que elija el comprador.
     direccion_entrega = forms.CharField(label="Dirección de entrega", max_length=250, required=False)
-    ciudad = forms.CharField(label="Ciudad", max_length=120, initial="Bogotá", required=False)
+    # Listas desplegables (DIVIPOLA). Al validar, `ciudad` queda como "Municipio, Departamento".
+    departamento = forms.CharField(label="Departamento", max_length=80, required=False,
+                                   initial=municipios.DEPARTAMENTO_POR_DEFECTO)
+    ciudad = forms.CharField(label="Municipio", max_length=120, required=False,
+                             initial=municipios.MUNICIPIO_POR_DEFECTO)
     observaciones = forms.CharField(label="Observaciones", required=False, widget=forms.Textarea)
     # Obligatoria para invitados (los usuarios autorizaron al crear su cuenta).
     autoriza_tratamiento = forms.BooleanField(label="Autorizo el tratamiento de mis datos", required=False)
+    # Opcional: solo se muestra si WhatsApp está activo. Requiere celular.
+    avisos_whatsapp = forms.BooleanField(label="Quiero recibir avisos de mi pedido por WhatsApp", required=False)
     metodo_pago = forms.ChoiceField(
         label="Medio de pago",
         choices=Pedido.METODOS_PAGO,
@@ -50,7 +58,15 @@ class CheckoutForm(forms.Form):
             if not datos.get("direccion_entrega", "").strip():
                 self.add_error("direccion_entrega", "Escribe la dirección de entrega.")
             if not datos.get("ciudad", "").strip():
-                self.add_error("ciudad", "Escribe la ciudad de entrega.")
+                self.add_error("ciudad", "Selecciona el municipio de entrega.")
+            else:
+                try:
+                    departamento, municipio = municipios.buscar(datos["ciudad"], datos.get("departamento", ""))
+                except municipios.MunicipioInvalido as exc:
+                    self.add_error("ciudad", str(exc))
+                else:
+                    datos["departamento"] = departamento
+                    datos["ciudad"] = municipios.etiqueta(departamento, municipio)
         if self.usuario is None and datos.get("metodo_pago") != Pedido.METODO_NOMINA:
             if len(datos.get("nombre", "")) < 3:
                 self.add_error("nombre", "Escribe tu nombre completo.")
@@ -60,6 +76,10 @@ class CheckoutForm(forms.Form):
                 self.add_error("telefono", "Escribe tu celular para contactarte.")
             if not datos.get("autoriza_tratamiento"):
                 self.add_error("autoriza_tratamiento", "Debes autorizar el tratamiento de tus datos para continuar.")
+        # Con nómina el celular se toma de la solicitud al fondo.
+        if (datos.get("avisos_whatsapp") and not datos.get("telefono")
+                and datos.get("metodo_pago") != Pedido.METODO_NOMINA):
+            self.add_error("telefono", "Escribe tu celular para recibir los avisos por WhatsApp.")
         return datos
 
     def datos_contacto(self):

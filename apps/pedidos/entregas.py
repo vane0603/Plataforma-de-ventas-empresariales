@@ -8,14 +8,14 @@ import binascii
 import io
 import logging
 
-from django.conf import settings
 from django.core.files.base import ContentFile
-from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Q
-from django.urls import reverse
 from django.utils import timezone
 from PIL import Image, UnidentifiedImageError
+
+from apps.notificaciones.models import Notificacion
+from apps.notificaciones.services import notificar, notificar_al_confirmar
 
 from .models import Entrega, Pedido
 
@@ -41,6 +41,29 @@ def pedidos_por_entregar():
         )
         .filter(entrega__isnull=True)
     )
+
+
+def despachar_pedidos(ids, usuario=None):
+    """
+    Marca como "En camino" los pedidos por entregar indicados y avisa a cada comprador.
+    Ignora los que ya salieron o ya no están por entregar. Devuelve los despachados.
+    """
+    despachados = []
+    with transaction.atomic():
+        pedidos = (
+            pedidos_por_entregar()
+            .filter(pk__in=ids, despachado_en__isnull=True)
+            .select_for_update(of=("self",))
+            .order_by("pk")
+        )
+        ahora = timezone.now()
+        for pedido in pedidos:
+            pedido.despachado_en = ahora
+            pedido.despachado_por = usuario
+            pedido.save(update_fields=["despachado_en", "despachado_por", "updated_at"])
+            notificar_al_confirmar(Notificacion.EVENTO_PEDIDO_DESPACHADO, pedido=pedido)
+            despachados.append(pedido)
+    return despachados
 
 
 def decodificar_firma(data_url):
@@ -106,25 +129,7 @@ def registrar_entrega(pedido, *, recibido_por, firma_png=b"", observaciones="", 
 
 
 def notificar_entrega(entrega):
-    pedido = entrega.pedido
-    correo = pedido.correo_notificacion
-    if not correo:
-        return
-    enlace = settings.PUBLIC_BASE_URL.rstrip("/") + reverse("pedidos:seguimiento", args=[pedido.codigo_acceso])
-    send_mail(
-        f"Tu pedido {pedido.numero} fue entregado",
-        (
-            f"Hola {pedido.nombre_cliente},\n\n"
-            f"Tu pedido {pedido.numero} fue entregado el "
-            f"{timezone.localtime(entrega.entregado_en):%d/%m/%Y a las %H:%M} "
-            f"y lo recibió {entrega.recibido_por}.\n\n"
-            f"Consulta la constancia de entrega aquí: {enlace}\n\n"
-            "Gracias por comprar en Tío Campo."
-        ),
-        settings.DEFAULT_FROM_EMAIL,
-        [correo],
-        fail_silently=True,
-    )
+    notificar(Notificacion.EVENTO_PEDIDO_ENTREGADO, pedido=entrega.pedido)
 
 
 def puede_ver_entrega(usuario, pedido):

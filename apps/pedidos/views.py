@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.carrito.views import obtener_carrito
+from apps.core import municipios
+from apps.notificaciones.canales.whatsapp import CanalWhatsApp
 from apps.pagos.services import pedido_pagable_en_linea
 
 from .acceso import pedido_accesible, recordar_pedido
@@ -16,7 +18,24 @@ from .services import PedidoError, cancelar_pedido, crear_pedido_desde_carrito, 
 
 # Datos que el invitado ya escribió, para no perderlos si debe iniciar sesión (nómina).
 SESSION_BORRADOR = "checkout_borrador"
-CAMPOS_BORRADOR = ("nombre", "correo", "telefono", "direccion_entrega", "ciudad", "observaciones", "metodo_pago")
+CAMPOS_BORRADOR = (
+    "nombre", "correo", "telefono", "direccion_entrega", "departamento", "ciudad", "observaciones", "metodo_pago",
+    "avisos_whatsapp",
+)
+
+
+def _ubicacion_seleccionada(form):
+    """Departamento y municipio que deben verse marcados en las listas desplegables."""
+    if form.is_bound:
+        departamento, municipio = form.data.get("departamento", ""), form.data.get("ciudad", "")
+    else:
+        departamento = form.initial.get("departamento") or form.fields["departamento"].initial
+        municipio = form.initial.get("ciudad") or form.fields["ciudad"].initial
+    try:
+        return municipios.buscar(municipio, departamento)
+    except municipios.MunicipioInvalido:
+        nombres = {d["nombre"] for d in municipios.departamentos()}
+        return (departamento if departamento in nombres else municipios.DEPARTAMENTO_POR_DEFECTO), ""
 
 
 def checkout(request):
@@ -24,6 +43,7 @@ def checkout(request):
     Cualquiera puede finalizar la compra. Solo el descuento por nómina pide
     iniciar sesión, porque el fondo debe verificar al titular de la cuenta.
     """
+    whatsapp_activo = CanalWhatsApp.habilitado()
     carrito = obtener_carrito(request)
     items = (
         carrito.items
@@ -63,6 +83,7 @@ def checkout(request):
                     observaciones=form.cleaned_data["observaciones"].strip(),
                     contacto=form.datos_contacto(),
                     autoriza_datos=form.cleaned_data["autoriza_tratamiento"],
+                    avisos_whatsapp=whatsapp_activo and form.cleaned_data["avisos_whatsapp"],
                 )
             except PedidoError as exc:
                 messages.error(request, str(exc))
@@ -84,6 +105,8 @@ def checkout(request):
             inicial.setdefault("correo", request.user.email)
         form = CheckoutForm(initial=inicial or None, usuario=request.user)
 
+    departamento_sel, municipio_sel = _ubicacion_seleccionada(form)
+    departamentos = municipios.departamentos()
     return render(
         request,
         "pedidos/checkout.html",
@@ -93,6 +116,13 @@ def checkout(request):
             "items": items,
             "total": carrito.total,
             "metodos": Pedido.METODOS_PAGO,
+            "whatsapp_activo": whatsapp_activo,
+            "departamentos": departamentos,
+            "departamento_sel": departamento_sel,
+            "municipio_sel": municipio_sel,
+            "municipios_del_departamento": next(
+                (d["municipios"] for d in departamentos if d["nombre"] == departamento_sel), []
+            ),
         },
     )
 

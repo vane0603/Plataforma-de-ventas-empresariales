@@ -11,6 +11,12 @@
   .tc-pestanas a.activa .tc-num { background: var(--tc-verde); color: #fff; }
   .tc-fila-pedido { display: block; background: #fff; border-radius: 14px; box-shadow: var(--tc-sombra); padding: 14px 16px; margin-bottom: 8px; color: inherit; }
   .tc-fila-pedido:hover { box-shadow: var(--tc-sombra-hover); color: inherit; }
+  .tc-fila-pedido .form-check-input { width: 1.3em; height: 1.3em; flex-shrink: 0; }
+  .tc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tc-chip { padding: 6px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--tc-borde); font-size: .88rem; font-weight: 600; color: var(--tc-gris); }
+  .tc-chip.activa { background: var(--tc-verde); border-color: var(--tc-verde); color: #fff; }
+  .tc-barra-despacho { position: sticky; top: 8px; z-index: 5; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+    background: var(--tc-verde-suave); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
 </style>
 {% endblock %}
 
@@ -60,6 +66,25 @@
     {% endif %}
   </form>
 
+  {% if vista == 'pendientes' %}
+    <div class="tc-chips mb-3" role="group" aria-label="Despacho">
+      <a href="?vista=pendientes&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if not despacho %}activa{% endif %}">Todos</a>
+      <a href="?vista=pendientes&despacho=por_despachar&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if despacho == 'por_despachar' %}activa{% endif %}">Por despachar</a>
+      <a href="?vista=pendientes&despacho=en_camino&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if despacho == 'en_camino' %}activa{% endif %}"><i class="bi bi-truck"></i> En camino ({{ total_en_camino }})</a>
+    </div>
+
+    <form id="tc-form-despacho" method="post" action="{% url 'pedidos:entregas_despachar' %}" class="tc-barra-despacho">
+      {% csrf_token %}
+      <input type="hidden" name="volver" value="{{ request.get_full_path }}">
+      <label class="form-check-label small d-flex align-items-center gap-2">
+        <input class="form-check-input m-0" type="checkbox" id="tc-sel-todos"> Seleccionar todos
+      </label>
+      <button class="btn btn-tio btn-sm rounded-pill" type="submit" id="tc-btn-despachar" disabled>
+        <i class="bi bi-truck me-1"></i>Marcar como despachados (<span id="tc-num-sel">0</span>)
+      </button>
+    </form>
+  {% endif %}
+
   {% for pedido in pedidos %}
     {% with solicitud=pedido.solicitud_nomina %}
     {% if vista == 'entregados' %}
@@ -81,10 +106,17 @@
         </div>
       </a>
     {% else %}
-      <a href="{% url 'pedidos:entrega_registrar' pedido.id %}" class="tc-fila-pedido">
+      <div class="tc-fila-pedido d-flex align-items-start gap-3">
+        {% if pedido.despachado_en %}
+          <i class="bi bi-truck fs-5 mt-1" style="color:var(--tc-verde)" title="En camino"></i>
+        {% else %}
+          <input class="form-check-input mt-1 tc-sel-pedido" type="checkbox" name="pedidos" value="{{ pedido.id }}" form="tc-form-despacho" aria-label="Seleccionar {{ pedido.numero }}">
+        {% endif %}
+      <a href="{% url 'pedidos:entrega_registrar' pedido.id %}" class="flex-grow-1 text-reset text-decoration-none">
         <div class="d-flex justify-content-between align-items-start gap-2">
           <div>
             <strong>{{ pedido.numero }}</strong>
+            {% if pedido.despachado_en %}<span class="badge rounded-pill text-bg-info ms-1"><i class="bi bi-truck"></i> En camino · {{ pedido.despachado_en|date:"d/m H:i" }}</span>{% endif %}
             <div>{% if solicitud %}{{ solicitud.nombre_completo }}{% else %}{{ pedido.nombre_cliente }}{% endif %}</div>
             <div class="small text-muted"><i class="bi bi-geo-alt"></i>
               {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}{% endif %}
@@ -97,6 +129,7 @@
           </div>
         </div>
       </a>
+      </div>
     {% endif %}
     {% endwith %}
   {% empty %}
@@ -111,10 +144,41 @@
 
   {% if pagina.has_other_pages %}
     <nav class="tc-paginacion">
-      {% if pagina.has_previous %}<a class="btn btn-outline-secondary rounded-pill" href="?vista={{ vista }}&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}&desde={{ desde }}&hasta={{ hasta }}&page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+      {% if pagina.has_previous %}<a class="btn btn-outline-secondary rounded-pill" href="?vista={{ vista }}&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}&despacho={{ despacho }}&desde={{ desde }}&hasta={{ hasta }}&page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
       <span class="small text-muted">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
-      {% if pagina.has_next %}<a class="btn btn-outline-secondary rounded-pill" href="?vista={{ vista }}&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}&desde={{ desde }}&hasta={{ hasta }}&page={{ pagina.next_page_number }}">Siguiente</a>{% endif %}
+      {% if pagina.has_next %}<a class="btn btn-outline-secondary rounded-pill" href="?vista={{ vista }}&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}&despacho={{ despacho }}&desde={{ desde }}&hasta={{ hasta }}&page={{ pagina.next_page_number }}">Siguiente</a>{% endif %}
     </nav>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+  (function () {
+    var todos = document.getElementById("tc-sel-todos");
+    var boton = document.getElementById("tc-btn-despachar");
+    if (!todos || !boton) return;
+    var casillas = Array.prototype.slice.call(document.querySelectorAll(".tc-sel-pedido"));
+    var contador = document.getElementById("tc-num-sel");
+    function actualizar() {
+      var marcadas = casillas.filter(function (c) { return c.checked; }).length;
+      contador.textContent = marcadas;
+      boton.disabled = marcadas === 0;
+      todos.checked = marcadas > 0 && marcadas === casillas.length;
+    }
+    todos.disabled = casillas.length === 0;
+    todos.addEventListener("change", function () {
+      casillas.forEach(function (c) { c.checked = todos.checked; });
+      actualizar();
+    });
+    casillas.forEach(function (c) { c.addEventListener("change", actualizar); });
+    document.getElementById("tc-form-despacho").addEventListener("submit", function (e) {
+      var n = contador.textContent;
+      if (!confirm("¿Marcar " + n + " pedido(s) como despachados? Se avisará a cada cliente que su pedido va en camino.")) {
+        e.preventDefault();
+      }
+    });
+    actualizar();
+  })();
+</script>
 {% endblock %}

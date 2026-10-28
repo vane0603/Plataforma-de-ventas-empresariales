@@ -121,6 +121,11 @@ class Pedido(models.Model):
         blank=True,
     )
 
+    # Autorización expresa para recibir avisos del pedido por WhatsApp.
+    avisos_whatsapp = models.BooleanField(
+        default=False,
+    )
+
     # Fecha en que se borraron los datos personales por la política de retención.
     anonimizado_en = models.DateTimeField(
         blank=True,
@@ -196,6 +201,20 @@ class Pedido(models.Model):
         blank=True,
     )
 
+    # Salida a entrega ("En camino"). No cambia el estado: el pago sigue igual.
+    despachado_en = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    despachado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_despachados",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -267,7 +286,8 @@ class Pedido(models.Model):
     @property
     def puede_cancelarse(self):
 
-        return self.estado in self.ESTADOS_CANCELABLES
+        # Si ya salió a entrega, se resuelve con el repartidor y no desde la tienda.
+        return self.estado in self.ESTADOS_CANCELABLES and self.despachado_en is None
 
     @property
     def puede_entregarse(self):
@@ -279,6 +299,11 @@ class Pedido(models.Model):
             self.estado == self.ESTADO_PENDIENTE_PAGO
             and self.METODO_OTRO in (self.metodo_pago, self.metodo_pago_saldo)
         )
+
+    @property
+    def en_camino(self):
+
+        return self.despachado_en is not None and self.estado != self.ESTADO_ENTREGADO
 
     @property
     def requiere_firma(self):

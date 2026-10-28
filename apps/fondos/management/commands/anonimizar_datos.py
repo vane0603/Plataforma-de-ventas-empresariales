@@ -13,9 +13,11 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.fondos.models import AfiliadoFondo, SolicitudDescuentoNomina
+from apps.notificaciones.models import Notificacion
 from apps.pedidos.models import Pedido
 
 TEXTO_ANONIMO = "Titular anonimizado"
@@ -74,6 +76,8 @@ class Command(BaseCommand):
             for entrega in entregas.exclude(firma=""):
                 entrega.firma.delete(save=False)
             entregas.update(recibido_por=TEXTO_ANONIMO, firma="", observaciones="")
+            # Antes de marcar pedidos y solicitudes (el filtro depende de que sigan sin anonimizar).
+            Notificacion.objects.filter(Q(pedido__in=pedidos) | Q(solicitud__in=solicitudes)).update(destino="")
             solicitudes.update(
                 nombre_completo=TEXTO_ANONIMO,
                 documento="",
