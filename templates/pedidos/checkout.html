@@ -7,15 +7,15 @@
   .tc-checkout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; padding: 24px 0 40px; }
   .tc-panel { background: var(--tc-blanco); border-radius: var(--tc-radio); box-shadow: var(--tc-sombra); padding: 24px; }
   .tc-panel + .tc-panel { margin-top: 16px; }
-  .tc-panel h2 { font-size: 1.1rem; font-weight: 700; color: var(--tc-verde); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-  .tc-paso { width: 28px; height: 28px; border-radius: 50%; background: var(--tc-verde); color: #fff; display: grid; place-items: center; font-size: .85rem; }
+  .tc-panel h2 { font-size: 1.1rem; font-weight: 700; color: var(--tc-primario); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .tc-paso { width: 28px; height: 28px; border-radius: 50%; background: var(--tc-primario); color: #fff; display: grid; place-items: center; font-size: .85rem; }
   .tc-metodo { display: flex; gap: 12px; align-items: flex-start; border: 2px solid var(--tc-borde); border-radius: 12px; padding: 14px; cursor: pointer; margin-bottom: 10px; transition: border-color .15s, background .15s; }
-  .tc-metodo:hover { border-color: var(--tc-dorado); }
-  .tc-metodo:has(input:checked) { border-color: var(--tc-verde); background: var(--tc-verde-suave); }
-  .tc-metodo input { margin-top: 4px; accent-color: var(--tc-verde); }
-  .tc-metodo i.bi { font-size: 1.4rem; color: var(--tc-verde); }
-  .tc-aviso-entrega { display: flex; gap: 10px; align-items: center; background: var(--tc-dorado-suave); border-radius: 12px; padding: 12px 14px; font-size: .9rem; }
-  .tc-aviso-entrega i { font-size: 1.3rem; color: var(--tc-dorado-2); }
+  .tc-metodo:hover { border-color: var(--tc-acento); }
+  .tc-metodo:has(input:checked) { border-color: var(--tc-primario); background: var(--tc-primario-suave); }
+  .tc-metodo input { margin-top: 4px; accent-color: var(--tc-primario); }
+  .tc-metodo i.bi { font-size: 1.4rem; color: var(--tc-primario); }
+  .tc-aviso-entrega { display: flex; gap: 10px; align-items: center; background: var(--tc-acento-suave); border-radius: 12px; padding: 12px 14px; font-size: .9rem; }
+  .tc-aviso-entrega i { font-size: 1.3rem; color: var(--tc-acento-2); }
   .tc-resumen { position: sticky; top: calc(var(--tc-alto-header) + 60px); align-self: start; }
   .tc-resumen__item { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: .9rem; }
   .tc-error { color: var(--tc-oferta); font-size: .82rem; margin-top: 4px; }
@@ -28,7 +28,7 @@
   <form method="post" class="tc-checkout" novalidate id="tc-checkout-form">
     {% csrf_token %}
     <div>
-      <h1 class="h3 fw-bold mb-3" style="color:var(--tc-verde)">Finaliza tu compra</h1>
+      <h1 class="h3 fw-bold mb-3" style="color:var(--tc-primario)">Finaliza tu compra</h1>
       {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
 
       <!-- 1. Medio de pago -->
@@ -42,7 +42,7 @@
               <strong>Descuento por nómina</strong>
               <span class="d-block small text-muted">Tu fondo de empleados verifica tu vinculación y cupo, y aprueba el total, una parte o rechaza.</span>
               {% if not user.is_authenticated %}
-                <span class="d-block small mt-1" style="color:var(--tc-verde)"><i class="bi bi-person-lock"></i> Te pediremos iniciar sesión o crear tu cuenta.</span>
+                <span class="d-block small mt-1" style="color:var(--tc-primario)"><i class="bi bi-person-lock"></i> Te pediremos iniciar sesión o crear tu cuenta.</span>
               {% endif %}
             </span>
           </label>
@@ -64,7 +64,7 @@
       <section class="tc-panel" id="tc-contacto">
         <h2><span class="tc-paso">2</span> Tus datos</h2>
         {% if not user.is_authenticated %}
-          <p class="small text-muted mt-n2">Compra sin crear cuenta. ¿Ya tienes una? <a href="{% url 'login' %}?next={% url 'pedidos:checkout' %}" style="color:var(--tc-verde);font-weight:600">Inicia sesión</a></p>
+          <p class="small text-muted mt-n2">Compra sin crear cuenta. ¿Ya tienes una? <a href="{% url 'login' %}?next={% url 'pedidos:checkout' %}" style="color:var(--tc-primario);font-weight:600">Inicia sesión</a></p>
         {% endif %}
         <div class="row g-3">
           <div class="col-md-12">
@@ -109,8 +109,8 @@
             <i class="bi bi-calendar-check"></i>
             <span><strong>La fecha de entrega se acuerda con el fondo de empleados.</strong></span>
           </div>
-          <div class="tc-aviso-entrega mb-3" style="background:var(--tc-verde-suave)">
-            <i class="bi bi-geo-alt-fill" style="color:var(--tc-verde)"></i>
+          <div class="tc-aviso-entrega mb-3" style="background:var(--tc-primario-suave)">
+            <i class="bi bi-geo-alt-fill" style="color:var(--tc-primario)"></i>
             <span><strong>Con descuento por nómina no necesitas dirección.</strong> En el siguiente paso eliges la finca donde trabajas y allí te entregamos.</span>
           </div>
         </div>
@@ -155,14 +155,14 @@
         <hr>
         <div class="d-flex justify-content-between align-items-baseline mb-3">
           <span class="fw-semibold">Total</span>
-          <span class="fs-4 fw-bold" style="color:var(--tc-verde)">${{ total|floatformat:"0g" }}</span>
+          <span class="fs-4 fw-bold" style="color:var(--tc-primario)">${{ total|floatformat:"0g" }}</span>
         </div>
         <button type="submit" class="tc-add__btn" id="tc-boton-continuar">
           <span data-texto-normal>Confirmar pedido</span>
           <span data-texto-login hidden>Continuar e iniciar sesión</span>
           <i class="bi bi-arrow-right"></i>
         </button>
-        <a href="{% url 'carrito:detalle' %}" class="d-block text-center small mt-3" style="color:var(--tc-verde)">Volver al carrito</a>
+        <a href="{% url 'carrito:detalle' %}" class="d-block text-center small mt-3" style="color:var(--tc-primario)">Volver al carrito</a>
       </div>
     </aside>
   </form>

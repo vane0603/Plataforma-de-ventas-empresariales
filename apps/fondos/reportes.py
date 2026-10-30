@@ -159,7 +159,7 @@ def generar_xlsx(solicitudes, periodo, fondo):
     hoja.append([titulo for _, titulo in COLUMNAS])
     for celda in hoja[1]:
         celda.font = Font(bold=True, color="FFFFFF")
-        celda.fill = PatternFill("solid", fgColor="0B4D2C")
+        celda.fill = PatternFill("solid", fgColor="0E2A4F")
 
     total = Decimal("0")
     for fila in filas(solicitudes, periodo):

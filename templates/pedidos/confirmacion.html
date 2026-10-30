@@ -42,16 +42,16 @@
     {% endif %}
 
     {% if pedido.estado == 'ENTREGADO' and pedido.entrega %}
-      <div class="d-flex gap-2 align-items-center mt-4 p-3 rounded-3" style="background:var(--tc-verde-suave)">
-        <i class="bi bi-check2-circle fs-4" style="color:var(--tc-verde)"></i>
+      <div class="d-flex gap-2 align-items-center mt-4 p-3 rounded-3" style="background:var(--tc-primario-suave)">
+        <i class="bi bi-check2-circle fs-4" style="color:var(--tc-primario)"></i>
         <span><strong>Entregado el {{ pedido.entrega.entregado_en|date:"d/m/Y H:i" }}</strong> · recibió {{ pedido.entrega.recibido_por }}.
-          <a href="{% url 'pedidos:entrega_constancia' pedido.id %}" style="color:var(--tc-verde);font-weight:600">Ver constancia</a></span>
+          <a href="{% url 'pedidos:entrega_constancia' pedido.id %}" style="color:var(--tc-primario);font-weight:600">Ver constancia</a></span>
       </div>
     {% endif %}
 
     {% if pedido.estado != 'ENTREGADO' %}
-    <div class="d-flex gap-2 align-items-center mt-4 p-3 rounded-3" style="background:var(--tc-dorado-suave)">
-      <i class="bi bi-calendar-check fs-4" style="color:var(--tc-dorado-2)"></i>
+    <div class="d-flex gap-2 align-items-center mt-4 p-3 rounded-3" style="background:var(--tc-acento-suave)">
+      <i class="bi bi-calendar-check fs-4" style="color:var(--tc-acento-2)"></i>
       <span>{% if pedido.metodo_pago == 'NOMINA' %}<strong>La fecha de entrega se acuerda con el fondo de empleados.</strong>{% else %}<strong>Te contactaremos para coordinar la entrega.</strong>{% endif %} Entrega en: {{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}.</span>
     </div>
     {% endif %}

@@ -92,10 +92,10 @@
 <!-- ============ DESCUENTO POR NÓMINA ============ -->
 <section class="tc-seccion">
   <div class="container">
-    <div class="p-4 p-md-5" style="background:var(--tc-dorado-suave);border-radius:20px;">
+    <div class="p-4 p-md-5" style="background:var(--tc-acento-suave);border-radius:20px;">
       <div class="row g-4 align-items-center">
         <div class="col-lg-4">
-          <span class="badge rounded-pill" style="background:var(--tc-verde)">Exclusivo Tío Campo</span>
+          <span class="badge rounded-pill" style="background:var(--tc-primario)">Exclusivo Tío Campo</span>
           <h2 class="tc-seccion__titulo mt-2" style="font-size:1.6rem">Compra hoy y págalo por nómina</h2>
           <p class="text-muted mb-0">Si tu empresa tiene convenio con nosotros, tu fondo de empleados aprueba la compra en minutos.</p>
         </div>
@@ -104,7 +104,7 @@
             {% for paso in "123" %}
               <div class="col-md-4">
                 <div class="h-100 p-3 bg-white rounded-4 shadow-sm">
-                  <div class="fw-bold fs-4" style="color:var(--tc-dorado)">{{ paso }}</div>
+                  <div class="fw-bold fs-4" style="color:var(--tc-acento)">{{ paso }}</div>
                   {% if paso == "1" %}<strong>Llena tu carrito</strong><p class="small text-muted mb-0">Elige tus productos como siempre.</p>
                   {% elif paso == "2" %}<strong>Elige "Descuento por nómina"</strong><p class="small text-muted mb-0">Ingresa tu documento y tu fondo.</p>
                   {% else %}<strong>Tu fondo responde</strong><p class="small text-muted mb-0">Aprobación total, parcial o rechazo. Si es parcial, pagas la diferencia en línea.</p>{% endif %}

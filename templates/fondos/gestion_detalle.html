@@ -15,7 +15,7 @@
           <div class="col-md-6"><small class="text-muted">Documento</small><div class="fw-semibold">{{ solicitud.documento }}</div></div>
           <div class="col-md-6"><small class="text-muted">Empresa</small><div>{{ solicitud.empresa }}</div></div>
           <div class="col-12"><small class="text-muted">Finca / punto de entrega</small>
-            <div class="fw-semibold">{% if solicitud.finca %}<i class="bi bi-geo-alt-fill" style="color:var(--tc-verde)"></i> {{ solicitud.finca }}{% else %}No indicada{% endif %}</div>
+            <div class="fw-semibold">{% if solicitud.finca %}<i class="bi bi-geo-alt-fill" style="color:var(--tc-primario)"></i> {{ solicitud.finca }}{% else %}No indicada{% endif %}</div>
             {% if solicitud.finca.indicaciones %}<div class="small text-muted">{{ solicitud.finca.indicaciones }}</div>{% endif %}
           </div>
           <div class="col-md-6"><small class="text-muted">Número afiliado</small><div>{{ solicitud.numero_afiliado|default:"No informado" }}</div></div>
@@ -41,10 +41,10 @@
 
         {% if solicitud.pedido.entrega %}
           <h4 class="section-title mt-4">Entrega</h4>
-          <div class="p-3 rounded-3" style="background:var(--tc-verde-suave)">
-            <div><i class="bi bi-check2-circle" style="color:var(--tc-verde)"></i> Entregado el {{ solicitud.pedido.entrega.entregado_en|date:"d/m/Y H:i" }} · recibió <strong>{{ solicitud.pedido.entrega.recibido_por }}</strong></div>
+          <div class="p-3 rounded-3" style="background:var(--tc-primario-suave)">
+            <div><i class="bi bi-check2-circle" style="color:var(--tc-primario)"></i> Entregado el {{ solicitud.pedido.entrega.entregado_en|date:"d/m/Y H:i" }} · recibió <strong>{{ solicitud.pedido.entrega.recibido_por }}</strong></div>
             {% if solicitud.pedido.entrega.firma %}<img src="{% url 'pedidos:entrega_firma' solicitud.pedido.id %}" alt="Firma" style="max-width:280px;width:100%;background:#fff;border-radius:8px" class="mt-2">{% endif %}
-            <div><a href="{% url 'pedidos:entrega_constancia' solicitud.pedido.id %}" class="small fw-semibold" style="color:var(--tc-verde)">Ver constancia de entrega</a></div>
+            <div><a href="{% url 'pedidos:entrega_constancia' solicitud.pedido.id %}" class="small fw-semibold" style="color:var(--tc-primario)">Ver constancia de entrega</a></div>
           </div>
         {% endif %}
 

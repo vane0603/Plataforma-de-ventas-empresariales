@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0B4D2C">
+  <meta name="theme-color" content="#0E2A4F">
   <title>{% block title %}Tío Campo · Mercado en línea{% endblock %}</title>
   <link rel="icon" href="{% static 'img/marca/favicon.ico' %}" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/marca/favicon-32.png' %}">
@@ -16,7 +16,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   {# ?v=…: obliga al navegador a descargar la versión nueva. Súbelo cada vez que cambies tienda.css o tienda.js. #}
-  <link href="{% static 'css/tienda.css' %}?v=2026-10-27" rel="stylesheet">
+  <link href="{% static 'css/tienda.css' %}?v=2026-10-28" rel="stylesheet">
   {% block css %}{% endblock %}
 </head>
 <body>
@@ -197,7 +197,7 @@
 <!-- ============ CARRITO LATERAL ============ -->
 <div class="offcanvas offcanvas-end tc-mini" tabindex="-1" id="tc-mini" aria-labelledby="tc-mini-titulo">
   <div class="offcanvas-header">
-    <h2 class="offcanvas-title fs-5 fw-bold" id="tc-mini-titulo" style="color:var(--tc-verde)"><i class="bi bi-cart3 me-2"></i>Tu carrito</h2>
+    <h2 class="offcanvas-title fs-5 fw-bold" id="tc-mini-titulo" style="color:var(--tc-primario)"><i class="bi bi-cart3 me-2"></i>Tu carrito</h2>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
   </div>
   <div class="offcanvas-body p-0" data-mini-cuerpo>
@@ -208,7 +208,7 @@
       <span>Total</span><strong data-cart-total>${{ total_carrito|floatformat:"0g" }}</strong>
     </div>
     <a href="{% url 'pedidos:checkout' %}" class="tc-add__btn text-decoration-none mb-2">Ir a pagar <i class="bi bi-arrow-right"></i></a>
-    <a href="{% url 'carrito:detalle' %}" class="d-block text-center small fw-semibold" style="color:var(--tc-verde)">Ver carrito completo</a>
+    <a href="{% url 'carrito:detalle' %}" class="d-block text-center small fw-semibold" style="color:var(--tc-primario)">Ver carrito completo</a>
   </div>
 </div>
 

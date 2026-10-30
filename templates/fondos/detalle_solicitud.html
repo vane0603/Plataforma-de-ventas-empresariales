@@ -12,7 +12,7 @@
       <div class="col-md-4"><small class="text-muted">Valor solicitado</small><div class="fs-5 fw-bold">${{ solicitud.valor_solicitado|floatformat:0 }}</div></div>
       <div class="col-md-4"><small class="text-muted">Valor aprobado</small><div class="fs-5 fw-bold">{% if solicitud.valor_aprobado != None %}${{ solicitud.valor_aprobado|floatformat:0 }}{% else %}Pendiente{% endif %}</div></div>
       <div class="col-md-4"><small class="text-muted">Cupo reportado</small><div class="fs-5 fw-bold">{% if solicitud.cupo_disponible_reportado != None %}${{ solicitud.cupo_disponible_reportado|floatformat:0 }}{% else %}Pendiente{% endif %}</div></div>
-      <div class="col-md-12"><small class="text-muted">Punto de entrega</small><div class="fw-semibold">{% if solicitud.finca %}<i class="bi bi-geo-alt-fill" style="color:var(--tc-verde)"></i> {{ solicitud.finca }}{% else %}Por acordar con el fondo{% endif %}</div></div>
+      <div class="col-md-12"><small class="text-muted">Punto de entrega</small><div class="fw-semibold">{% if solicitud.finca %}<i class="bi bi-geo-alt-fill" style="color:var(--tc-primario)"></i> {{ solicitud.finca }}{% else %}Por acordar con el fondo{% endif %}</div></div>
       <div class="col-md-4"><small class="text-muted">Vinculación validada</small><div>{% if solicitud.vinculacion_validada == True %}Sí{% elif solicitud.vinculacion_validada == False %}No{% else %}Pendiente{% endif %}</div></div>
       <div class="col-md-8"><small class="text-muted">Respuesta del fondo</small><div>{{ solicitud.respuesta_fondo|default:"Pendiente de respuesta." }}</div></div>
     </div>

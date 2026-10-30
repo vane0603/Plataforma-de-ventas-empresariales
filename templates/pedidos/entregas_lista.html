@@ -6,24 +6,24 @@
   .tc-pestanas { display: flex; gap: 8px; border-bottom: 2px solid var(--tc-borde); margin-bottom: 16px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
   .tc-pestanas::-webkit-scrollbar { display: none; }
   .tc-pestanas a { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; font-weight: 600; color: var(--tc-gris); border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
-  .tc-pestanas a.activa { color: var(--tc-verde); border-bottom-color: var(--tc-verde); }
+  .tc-pestanas a.activa { color: var(--tc-primario); border-bottom-color: var(--tc-primario); }
   .tc-pestanas .tc-num { min-width: 24px; height: 22px; padding: 0 7px; border-radius: 999px; display: inline-grid; place-items: center; font-size: .78rem; background: var(--tc-borde); color: var(--tc-texto); }
-  .tc-pestanas a.activa .tc-num { background: var(--tc-verde); color: #fff; }
+  .tc-pestanas a.activa .tc-num { background: var(--tc-primario); color: #fff; }
   .tc-fila-pedido { display: block; background: #fff; border-radius: 14px; box-shadow: var(--tc-sombra); padding: 14px 16px; margin-bottom: 8px; color: inherit; }
   .tc-fila-pedido:hover { box-shadow: var(--tc-sombra-hover); color: inherit; }
   .tc-fila-pedido .form-check-input { width: 1.3em; height: 1.3em; flex-shrink: 0; }
   .tc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .tc-chip { padding: 6px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--tc-borde); font-size: .88rem; font-weight: 600; color: var(--tc-gris); }
-  .tc-chip.activa { background: var(--tc-verde); border-color: var(--tc-verde); color: #fff; }
+  .tc-chip.activa { background: var(--tc-primario); border-color: var(--tc-primario); color: #fff; }
   .tc-barra-despacho { position: sticky; top: 8px; z-index: 5; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
-    background: var(--tc-verde-suave); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    background: var(--tc-primario-suave); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-4">
   <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-    <h1 class="h3 fw-bold mb-0" style="color:var(--tc-verde)"><i class="bi bi-truck me-2"></i>Entregas</h1>
+    <h1 class="h3 fw-bold mb-0" style="color:var(--tc-primario)"><i class="bi bi-truck me-2"></i>Entregas</h1>
     <div class="small text-muted">Entregados hoy: <strong>{{ entregados_hoy }}</strong></div>
   </div>
 
@@ -98,7 +98,7 @@
             </div>
           </div>
           <div class="text-end small">
-            <span class="badge rounded-pill" style="background:var(--tc-verde)"><i class="bi bi-check2"></i> Entregado</span>
+            <span class="badge rounded-pill" style="background:var(--tc-acento)"><i class="bi bi-check2"></i> Entregado</span>
             {% if pedido.entrega.firma %}<span class="badge rounded-pill text-bg-light border"><i class="bi bi-pen"></i> Firmado</span>{% endif %}
             <div class="mt-1">{{ pedido.entrega.entregado_en|date:"d/m/Y H:i" }}</div>
             {% if pedido.entrega.entregado_por %}<div class="text-muted">por {{ pedido.entrega.entregado_por.get_full_name|default:pedido.entrega.entregado_por.username }}</div>{% endif %}
@@ -108,7 +108,7 @@
     {% else %}
       <div class="tc-fila-pedido d-flex align-items-start gap-3">
         {% if pedido.despachado_en %}
-          <i class="bi bi-truck fs-5 mt-1" style="color:var(--tc-verde)" title="En camino"></i>
+          <i class="bi bi-truck fs-5 mt-1" style="color:var(--tc-primario)" title="En camino"></i>
         {% else %}
           <input class="form-check-input mt-1 tc-sel-pedido" type="checkbox" name="pedidos" value="{{ pedido.id }}" form="tc-form-despacho" aria-label="Seleccionar {{ pedido.numero }}">
         {% endif %}
@@ -123,7 +123,7 @@
             </div>
           </div>
           <div class="text-end">
-            {% if pedido.requiere_firma %}<span class="badge rounded-pill" style="background:var(--tc-verde)"><i class="bi bi-pen"></i> Nómina · firma</span>{% endif %}
+            {% if pedido.requiere_firma %}<span class="badge rounded-pill" style="background:var(--tc-primario)"><i class="bi bi-pen"></i> Nómina · firma</span>{% endif %}
             {% if pedido.estado == "PENDIENTE_PAGO" %}<span class="badge rounded-pill text-bg-warning">Cobrar ${{ pedido.saldo_pendiente|floatformat:"0g" }}</span>{% endif %}
             <div class="fw-bold mt-1">${{ pedido.total|floatformat:"0g" }}</div>
           </div>

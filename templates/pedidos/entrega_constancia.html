@@ -16,9 +16,9 @@
 <div class="container py-4" style="max-width: 760px;">
   <div class="d-flex justify-content-between align-items-center mb-2 no-imprimir">
     {% if perms.pedidos.registrar_entrega %}
-      <a href="{% url 'pedidos:entregas' %}" class="small fw-semibold" style="color:var(--tc-verde)"><i class="bi bi-chevron-left"></i> Entregas</a>
+      <a href="{% url 'pedidos:entregas' %}" class="small fw-semibold" style="color:var(--tc-primario)"><i class="bi bi-chevron-left"></i> Entregas</a>
     {% else %}
-      <a href="{% url 'pedidos:confirmacion' pedido.id %}" class="small fw-semibold" style="color:var(--tc-verde)"><i class="bi bi-chevron-left"></i> Volver al pedido</a>
+      <a href="{% url 'pedidos:confirmacion' pedido.id %}" class="small fw-semibold" style="color:var(--tc-primario)"><i class="bi bi-chevron-left"></i> Volver al pedido</a>
     {% endif %}
     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
   </div>
@@ -27,9 +27,9 @@
     <div class="d-flex justify-content-between flex-wrap gap-2">
       <div>
         <div class="small text-muted">Tío Campo · Constancia de entrega</div>
-        <h1 class="h4 fw-bold mb-0" style="color:var(--tc-verde)">Pedido {{ pedido.numero }}</h1>
+        <h1 class="h4 fw-bold mb-0" style="color:var(--tc-primario)">Pedido {{ pedido.numero }}</h1>
       </div>
-      <span class="badge rounded-pill align-self-start" style="background:var(--tc-verde)"><i class="bi bi-check2-circle"></i> Entregado</span>
+      <span class="badge rounded-pill align-self-start" style="background:var(--tc-primario)"><i class="bi bi-check2-circle"></i> Entregado</span>
     </div>
 
     <dl class="row mt-4 mb-0 small">
