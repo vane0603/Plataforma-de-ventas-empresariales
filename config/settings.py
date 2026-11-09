@@ -519,8 +519,8 @@ if not DEBUG:
     if not DATOS_CIFRADO_CLAVES or not DATOS_HUELLA_CLAVE:
         raise RuntimeError("Defina DATOS_CIFRADO_CLAVES y DATOS_HUELLA_CLAVE en producción.")
 
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # COOKIES_SEGURAS=0 solo en "modo red local" (http dentro de la oficina, sin internet).
+    SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = os.getenv("COOKIES_SEGURAS", "1") == "1"
     SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "1") == "1"
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "3600"))

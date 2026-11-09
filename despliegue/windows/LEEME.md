@@ -96,7 +96,27 @@ Carga los datos, los cifra con las claves del servidor y copia imágenes y firma
 
 *(Si prefieres empezar sin datos: `.venv\Scripts\python manage.py createsuperuser`.)*
 
-## Fase 5. Publicar en internet con Tailscale Funnel
+## Fase 5 (opción A). Solo la red de la oficina, sin internet
+
+Use esta opción si la plataforma solo se va a usar desde los equipos y celulares conectados al Wi-Fi
+(o cable) de la oficina. Nadie de afuera puede entrar.
+
+1. **IP fija para el servidor:** en el router de la oficina reserve una IP para el servidor
+   (*Reserva DHCP* / *IP estática*), por ejemplo `192.168.1.50`. Para ver la IP actual:
+   `ipconfig` → *Dirección IPv4*.
+2. **Red como Privada:** *Configuración → Red e Internet → (su red) → Tipo de perfil de red → Privada*.
+3. PowerShell como administrador, en `C:\TioCampo\plataforma-ventas`:
+   ```
+   powershell -ExecutionPolicy Bypass -File despliegue\windows\red_local.ps1 -Ip 192.168.1.50
+   ```
+   Ajusta el `.env`, abre el puerto 8000 **solo para la red local** y reinicia la plataforma.
+4. Desde un celular conectado al Wi-Fi de la oficina entre a `http://192.168.1.50:8000`.
+
+> En este modo la conexión es `http` (sin candado). Por eso la red Wi-Fi debe tener contraseña (WPA2
+> o WPA3) y no conviene una red de invitados abierta. Los pagos con Wompi no funcionan sin internet.
+> Si más adelante quieren abrirla a internet, haga la opción B: `dominio.ps1` deshace este modo.
+
+## Fase 5 (opción B). Publicar en internet con Tailscale Funnel
 
 1. Crea una cuenta gratuita en **tailscale.com** (puedes entrar con Google o Microsoft).
 2. En el servidor descarga **Tailscale para Windows** desde tailscale.com/download, instálalo e inicia sesión.
@@ -119,7 +139,8 @@ Ver el estado en cualquier momento: `tailscale funnel status`.
 
 ## Fase 6. Comprobaciones finales
 
-- [ ] La dirección `https://…ts.net` abre la tienda en el celular con datos móviles.
+- [ ] Opción A: `http://IP-del-servidor:8000` abre la tienda desde un celular en el Wi-Fi de la oficina.
+- [ ] Opción B: la dirección `https://…ts.net` abre la tienda en el celular con datos móviles.
 - [ ] Puedes iniciar sesión en `https://…ts.net/admin/`.
 - [ ] En el *Programador de tareas → TioCampo* están las 4 tareas.
 - [ ] **Reinicia el servidor** y, sin iniciar sesión en Windows, la tienda vuelve a abrir en 1–2 minutos.
