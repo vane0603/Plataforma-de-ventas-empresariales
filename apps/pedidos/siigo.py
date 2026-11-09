@@ -168,14 +168,18 @@ def _fecha_es(fecha):
 
 
 def cuentas_por_linea():
-    """{(línea, grupo): cuenta de venta} en el formato de 10 dígitos de la factura."""
-    return {(c.linea, c.grupo): cuenta_siigo(c.cuenta_venta) for c in CuentaLineaSiigo.objects.all()}
+    """{(línea, grupo): (venta, inventario, costo)} en el formato de 10 dígitos de la factura (None = no informada)."""
+    return {
+        (c.linea, c.grupo): (cuenta_siigo(c.cuenta_venta), cuenta_siigo(c.cuenta_inventario), cuenta_siigo(c.cuenta_costo))
+        for c in CuentaLineaSiigo.objects.all()
+    }
 
 
 def filas_pedido(pedido, config, cuentas=None):
     """
-    Lista de filas (dict columna -> valor) de la factura de un pedido. La cuenta de ingreso sale de
-    la tabla de cuentas de venta por línea/grupo (si la línea no está, la del fondo); las demás, del fondo.
+    Lista de filas (dict columna -> valor) de la factura de un pedido. Las cuentas de ingreso,
+    inventario y costo salen de la tabla de cuentas por línea/grupo; si la línea no está o le falta
+    alguna, se usa la del fondo. Cartera y descuento son siempre las del fondo.
     """
     cuentas = cuentas_por_linea() if cuentas is None else cuentas
     solicitud = pedido.solicitud_nomina
@@ -194,14 +198,16 @@ def filas_pedido(pedido, config, cuentas=None):
     for item in pedido.items.all():
         origen = _origen(item)
         linea, grupo, codigo = partes_codigo_siigo(origen.codigo_siigo)
-        productos.append((item, cuentas.get((linea, grupo)) or config.cuenta_ingreso, {
+        venta, inventario, costo = cuentas.get((linea, grupo), (None, None, None))
+        productos.append((item, venta or config.cuenta_ingreso, inventario or config.cuenta_inventario,
+                          costo or config.cuenta_costo, {
             "L": config.zona, "R": _texto(descripcion_producto(item, origen)),
             "BS": linea, "BT": grupo, "BU": codigo, "BV": item.cantidad,
             "BX": origen.bodega_siigo or config.bodega, "Y": _numero(item.descuento),
         }))
 
     filas = []
-    for item, venta, producto in productos:
+    for item, venta, _, _, producto in productos:
         filas.append({**producto, "D": venta, "E": "C", "F": _numero(item.subtotal),
                       "S": 0, "V": 0, "BO": " ", "CQ": " ", "CW": 0, "CX": 0})
     filas.append({
@@ -216,11 +222,11 @@ def filas_pedido(pedido, config, cuentas=None):
             "R": _texto(solicitud.nombre_completo), "S": 0, "V": 0, "Y": 0, "BO": " ", "CQ": " ",
             "CV": " " * 5, "CW": 0, "CX": 0, "CY": " " * 4, "CZ": " " * 2, "DA": " " * 2,
         })
-    for item, _, producto in productos:
+    for item, _, inventario, costo, producto in productos:
         venta = _numero(item.subtotal)
-        filas.append({**producto, "D": config.cuenta_inventario, "E": "C", "F": 0, "S": venta, "V": 0,
+        filas.append({**producto, "D": inventario, "E": "C", "F": 0, "S": venta, "V": 0,
                       "BO": "N", "CQ": " ", "CW": 0, "CX": 0})
-        filas.append({**producto, "D": config.cuenta_costo, "E": "D", "F": 0, "S": venta, "V": 0,
+        filas.append({**producto, "D": costo, "E": "D", "F": 0, "S": venta, "V": 0,
                       "BO": "N", "CQ": 0, "CW": 0, "CX": 0})
 
     for secuencia, fila in enumerate(filas, start=1):

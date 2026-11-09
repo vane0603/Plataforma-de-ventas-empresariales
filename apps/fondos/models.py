@@ -121,12 +121,12 @@ class ConfiguracionSiigo(models.Model):
     dias_vencimiento = models.PositiveIntegerField(
         "días de vencimiento", default=0, help_text="Plazo de la cuenta por cobrar. 0 = vence el mismo día.",
     )
-    # La cuenta de ingresos depende de la línea/grupo del producto (tabla "Cuentas de venta por línea
-    # Siigo"); esta se usa solo para los productos cuya línea no está en esa tabla.
+    # Ingreso, inventario y costo dependen de la línea/grupo del producto (tabla "Cuentas por línea
+    # Siigo"); estas se usan solo si la línea no está en esa tabla o le falta esa cuenta.
     cuenta_ingreso = models.PositiveBigIntegerField("cuenta de ingresos por defecto (crédito)", default=4135950400)
     cuenta_cartera = models.PositiveBigIntegerField("cuenta por cobrar (débito)", default=1365950100)
-    cuenta_inventario = models.PositiveBigIntegerField("cuenta de inventario (crédito)", default=1435010400)
-    cuenta_costo = models.PositiveBigIntegerField("cuenta de costo de ventas (débito)", default=6135950400)
+    cuenta_inventario = models.PositiveBigIntegerField("cuenta de inventario por defecto (crédito)", default=1435010400)
+    cuenta_costo = models.PositiveBigIntegerField("cuenta de costo de ventas por defecto (débito)", default=6135950400)
     cuenta_descuento = models.PositiveBigIntegerField("cuenta de descuento a empleados (débito)", default=4135980000)
 
     class Meta:
@@ -152,18 +152,21 @@ def cuenta_siigo(texto):
 
 class CuentaLineaSiigo(models.Model):
     """
-    Cuenta de venta (ingreso) de Siigo por línea y grupo de producto (la tabla de líneas de Siigo).
-    El código Siigo del producto 700-15-45 usa la fila línea 700 / grupo 15.
+    Cuentas de venta, inventario y costo de Siigo por línea y grupo de producto (la tabla de líneas
+    de Siigo). El código Siigo del producto 700-15-45 usa la fila línea 700 / grupo 15.
     """
 
     linea = models.PositiveIntegerField("línea")
     grupo = models.PositiveIntegerField()
     nombre_linea = models.CharField("nombre de la línea", max_length=100, blank=True)
     cuenta_venta = models.CharField("cta. venta", max_length=10, validators=[validar_cuenta])
+    # Vacías = se usan las del fondo.
+    cuenta_inventario = models.CharField("cta. inventario", max_length=10, blank=True, validators=[validar_cuenta])
+    cuenta_costo = models.CharField("cta. costos", max_length=10, blank=True, validators=[validar_cuenta])
 
     class Meta:
-        verbose_name = "Cuenta de venta por línea Siigo"
-        verbose_name_plural = "Cuentas de venta por línea Siigo"
+        verbose_name = "Cuenta por línea Siigo"
+        verbose_name_plural = "Cuentas por línea Siigo"
         ordering = ["linea", "grupo"]
         constraints = [models.UniqueConstraint(fields=["linea", "grupo"], name="cuenta_linea_siigo_unica")]
 

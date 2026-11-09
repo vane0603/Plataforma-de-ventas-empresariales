@@ -50,7 +50,8 @@ class CuentasPorLineaTest(TestCase):
         resultado = importar_cuentas_lineas(archivo)
         self.assertEqual((resultado.creadas, resultado.actualizadas, len(resultado.errores)), (2, 0, 1))
         bebidas = CuentaLineaSiigo.objects.get(linea=700, grupo=15)
-        self.assertEqual((bebidas.cuenta_venta, bebidas.nombre_linea), ("41359504", "BEBIDAS"))
+        self.assertEqual((bebidas.cuenta_venta, bebidas.cuenta_inventario, bebidas.cuenta_costo, bebidas.nombre_linea),
+                         ("41359504", "14350104", "61359504", "BEBIDAS"))
 
         # Volver a importar actualiza en vez de duplicar.
         resultado = importar_cuentas_lineas(excel_de_lineas([["700", "15", "14350104", "61359504", "41359599", "", "", "BEBIDAS"]]))
@@ -79,7 +80,8 @@ class CuentasPorLineaTest(TestCase):
     def test_la_factura_usa_las_cuentas_de_la_linea(self):
         fondo = FondoEmpleado.objects.create(nombre="MACS")
         config = ConfiguracionSiigo.objects.create(fondo=fondo, siguiente_numero=100)
-        CuentaLineaSiigo.objects.create(linea=700, grupo=15, cuenta_venta="41359599", nombre_linea="BEBIDAS")
+        CuentaLineaSiigo.objects.create(linea=700, grupo=15, cuenta_venta="41359599", cuenta_inventario="14350104",
+                                        cuenta_costo="61359504", nombre_linea="BEBIDAS")
         unidad = UnidadMedida.objects.create(nombre="Mililitro", abreviatura="ml")
         categoria, marca = Categoria.objects.create(nombre="Lácteos"), Marca.objects.create(nombre="Tío Campo")
 
@@ -114,6 +116,13 @@ class CuentasPorLineaTest(TestCase):
         self.assertEqual(cuentas, [
             4135959900, config.cuenta_ingreso,          # ingreso: cuenta de venta de la línea 700-15 / por defecto
             config.cuenta_cartera,
-            config.cuenta_inventario, config.cuenta_costo,  # inventario y costo: siempre las del fondo
-            config.cuenta_inventario, config.cuenta_costo,
+            1435010400, 6135950400,                     # inventario y costo de la línea 700-15
+            config.cuenta_inventario, config.cuenta_costo,  # línea sin fila: las del fondo
         ])
+
+
+class CuentasOpcionalesTest(TestCase):
+    def test_inventario_y_costo_en_ceros_quedan_vacios(self):
+        importar_cuentas_lineas(excel_de_lineas([["020", "0001", "00000000", "", "41359506", "", "", "SERVICIOS"]]))
+        linea = CuentaLineaSiigo.objects.get(linea=20, grupo=1)
+        self.assertEqual((linea.cuenta_venta, linea.cuenta_inventario, linea.cuenta_costo), ("41359506", "", ""))

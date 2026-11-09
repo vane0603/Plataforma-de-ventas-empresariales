@@ -1,8 +1,9 @@
 """
-Importa la tabla de líneas de Siigo (Excel) a "Cuentas de venta por línea Siigo".
+Importa la tabla de líneas de Siigo (Excel) a "Cuentas por línea Siigo".
 
 El archivo puede tener filas de título arriba: se busca la fila de encabezados que tenga
-LINEA y GRUPO. Columnas usadas: LINEA, GRUPO, CTA VENTA y NOMBRE LINEA (las demás se ignoran).
+LINEA y GRUPO. Columnas usadas: LINEA, GRUPO, CTA VENTA, CTA INVENT, CTA COSTOS y NOMBRE LINEA
+(las demás se ignoran). CTA INVENT y CTA COSTOS son opcionales.
 """
 
 import unicodedata
@@ -16,6 +17,8 @@ COLUMNAS = {
     "LINEA": "linea",
     "GRUPO": "grupo",
     "CTA VENTA": "cuenta_venta",
+    "CTA INVENT": "cuenta_inventario",
+    "CTA COSTOS": "cuenta_costo",
     "NOMBRE LINEA": "nombre_linea",
 }
 OBLIGATORIAS = ("linea", "grupo", "cuenta_venta")
@@ -41,6 +44,12 @@ def _digitos(valor):
     if isinstance(valor, float) and valor.is_integer():
         valor = int(valor)
     return "".join(c for c in str(valor if valor is not None else "") if c.isdigit())
+
+
+def _cuenta_opcional(valor):
+    """Una cuenta en ceros (00000000) o vacía cuenta como no informada."""
+    digitos = _digitos(valor)[:10]
+    return digitos if digitos.strip("0") else ""
 
 
 def importar_cuentas_lineas(archivo):
@@ -77,7 +86,12 @@ def importar_cuentas_lineas(archivo):
                 continue
             _, creada = CuentaLineaSiigo.objects.update_or_create(
                 linea=int(linea), grupo=int(grupo),
-                defaults={"cuenta_venta": venta, "nombre_linea": str(datos.get("nombre_linea") or "").strip()[:100]},
+                defaults={
+                    "cuenta_venta": venta,
+                    "cuenta_inventario": _cuenta_opcional(datos.get("cuenta_inventario")),
+                    "cuenta_costo": _cuenta_opcional(datos.get("cuenta_costo")),
+                    "nombre_linea": str(datos.get("nombre_linea") or "").strip()[:100],
+                },
             )
             if creada:
                 resultado.creadas += 1

@@ -6,8 +6,8 @@
 </div>
 {% endblock %}
 {% block content %}
-<p>Sube el Excel de líneas de Siigo. Se usan las columnas <b>LINEA</b>, <b>GRUPO</b>, <b>CTA VENTA</b> y
-  <b>NOMBRE LINEA</b>; las demás se ignoran.
+<p>Sube el Excel de líneas de Siigo. Se usan las columnas <b>LINEA</b>, <b>GRUPO</b>, <b>CTA VENTA</b>,
+  <b>CTA INVENT</b>, <b>CTA COSTOS</b> y <b>NOMBRE LINEA</b>; las demás se ignoran.
   Puede tener filas de título arriba. Las líneas que ya existen se actualizan.</p>
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}

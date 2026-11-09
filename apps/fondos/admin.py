@@ -20,8 +20,8 @@ class ImportarCuentasForm(forms.Form):
 
 @admin.register(CuentaLineaSiigo)
 class CuentaLineaSiigoAdmin(admin.ModelAdmin):
-    list_display = ("linea_grupo", "nombre_linea", "cuenta_venta")
-    list_editable = ("cuenta_venta",)
+    list_display = ("linea_grupo", "nombre_linea", "cuenta_venta", "cuenta_inventario", "cuenta_costo")
+    list_editable = ("cuenta_venta", "cuenta_inventario", "cuenta_costo")
     list_display_links = ("linea_grupo",)
     list_filter = ("linea", "nombre_linea")
     search_fields = ("nombre_linea", "linea", "grupo")
@@ -57,7 +57,7 @@ class CuentaLineaSiigoAdmin(admin.ModelAdmin):
         return TemplateResponse(request, "admin/fondos/cuentalineasiigo/importar.html", {
             **self.admin_site.each_context(request),
             "opts": self.model._meta,
-            "title": "Importar cuentas de venta por línea desde Excel",
+            "title": "Importar cuentas por línea desde Excel",
             "form": form,
         })
 
@@ -79,8 +79,9 @@ class ConfiguracionSiigoInline(admin.StackedInline):
         ("Códigos", {"fields": (("vendedor", "ciudad", "zona"), ("centro_costo", "subcentro_costo", "sucursal"),
                                 ("bodega", "forma_pago", "dias_vencimiento"))}),
         ("Cuentas contables", {"fields": (("cuenta_ingreso", "cuenta_cartera"), ("cuenta_inventario", "cuenta_costo"), "cuenta_descuento"),
-                               "description": "La cuenta de ingresos de cada producto se toma de <b>Cuentas de venta por línea Siigo</b> "
-                                              "según su línea y grupo; la de aquí se usa solo si la línea no está en esa tabla."}),
+                               "description": "Las cuentas de ingresos, inventario y costo de cada producto se toman de <b>Cuentas por línea "
+                                              "Siigo</b> según su línea y grupo; las de aquí se usan solo si la línea no está en esa "
+                                              "tabla o le falta esa cuenta."}),
     )
 
 
