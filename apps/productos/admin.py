@@ -16,6 +16,8 @@ class ProductoPresentacionInline(admin.TabularInline):
         "activo",
         "destacado",
         "orden",
+        "codigo_siigo",
+        "bodega_siigo",
     )
 
 
@@ -67,6 +69,7 @@ class ProductoPresentacionAdmin(admin.ModelAdmin):
         "producto",
         "presentacion",
         "precio",
+        "codigo_siigo",
         "destacado",
         "activo",
     )
@@ -85,6 +88,7 @@ class ProductoPresentacionAdmin(admin.ModelAdmin):
 
     list_editable = (
         "precio",
+        "codigo_siigo",
         "destacado",
         "activo",
     )

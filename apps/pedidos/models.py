@@ -11,8 +11,57 @@ from apps.core.campos import TextoCifrado
 from apps.productos.models import ProductoPresentacion
 from apps.promociones.models import Combo
 
+# Color de cada estado: amarillo = falta algo del cliente, azul = en trámite,
+# verde = listo o entregado, rojo = rechazado, gris = cancelado.
+CLASES_ESTADO = {
+    "PENDIENTE_PAGO": "text-bg-warning",
+    "PEND_SOL_NOMINA": "text-bg-warning",
+    "REVISION_NOMINA": "text-bg-info",
+    "APROBADO_NOMINA": "text-bg-primary",
+    "APROBADO_PARCIAL": "text-bg-warning",
+    "RECHAZADO_NOMINA": "text-bg-danger",
+    "PAGADO": "text-bg-primary",
+    "CANCELADO": "text-bg-secondary",
+    "ENTREGADO": "text-bg-success",
+}
+
+
+class PuntoRecogida(models.Model):
+    """Tienda o bodega donde el cliente puede recoger su pedido (se administra en el admin)."""
+
+    nombre = models.CharField(max_length=120)
+    direccion = models.CharField(max_length=250)
+    ciudad = models.CharField(max_length=120, help_text="Ej.: Madrid, Cundinamarca")
+    horario = models.CharField(max_length=200, blank=True, help_text="Ej.: Lunes a sábado de 8:00 a. m. a 6:00 p. m.")
+    indicaciones = models.CharField(max_length=250, blank=True, help_text="Ej.: Presenta el número del pedido en caja.")
+    activo = models.BooleanField(default=True)
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+
+        verbose_name = "Punto de recogida"
+        verbose_name_plural = "Puntos de recogida"
+
+        ordering = ["orden", "nombre"]
+
+    def __str__(self):
+        return self.nombre
+
+    @property
+    def ubicacion(self):
+
+        return ", ".join(p for p in (self.direccion, self.ciudad) if p)
+
 
 class Pedido(models.Model):
+
+    TIPO_DOMICILIO = "DOMICILIO"
+    TIPO_TIENDA = "TIENDA"
+
+    TIPOS_ENTREGA = [
+        (TIPO_DOMICILIO, "Envío a domicilio"),
+        (TIPO_TIENDA, "Recoger en tienda"),
+    ]
 
     METODO_ELECTRONICO = "ELECTRONICO"
     METODO_OTRO = "OTRO"
@@ -169,6 +218,13 @@ class Pedido(models.Model):
         decimal_places=2,
     )
 
+    # Descuento para empleados del fondo (por nómina). total = subtotal - descuento.
+    descuento = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
     total = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -186,6 +242,22 @@ class Pedido(models.Model):
         blank=True,
     )
 
+    tipo_entrega = models.CharField(
+        max_length=12,
+        choices=TIPOS_ENTREGA,
+        default=TIPO_DOMICILIO,
+    )
+
+    # Solo cuando el cliente recoge en tienda. La dirección y la ciudad del
+    # pedido se copian del punto (así el histórico no cambia si el punto se edita).
+    punto_recogida = models.ForeignKey(
+        PuntoRecogida,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="pedidos",
+    )
+
     # Parte del total cubierta por el fondo de empleados (descuento por nómina).
     valor_nomina = models.DecimalField(
         max_digits=12,
@@ -201,7 +273,7 @@ class Pedido(models.Model):
         blank=True,
     )
 
-    # Salida a entrega ("En camino"). No cambia el estado: el pago sigue igual.
+    # Salida a entrega ("En camino", o "Listo para recoger" si recoge en tienda). No cambia el estado: el pago sigue igual.
     despachado_en = models.DateTimeField(
         null=True,
         blank=True,
@@ -213,6 +285,19 @@ class Pedido(models.Model):
         null=True,
         blank=True,
         related_name="pedidos_despachados",
+    )
+
+    # Factura en Siigo (solo fondos que exportan a Siigo). Evita exportar dos veces el mismo pedido.
+    siigo_numero = models.PositiveIntegerField(
+        "número de factura Siigo",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    siigo_exportado_en = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(
@@ -306,6 +391,30 @@ class Pedido(models.Model):
         return self.despachado_en is not None and self.estado != self.ESTADO_ENTREGADO
 
     @property
+    def recoge_en_tienda(self):
+
+        return self.tipo_entrega == self.TIPO_TIENDA
+
+    @property
+    def texto_despacho(self):
+
+        return "Listo para recoger" if self.recoge_en_tienda else "En camino"
+
+    @property
+    def lugar_entrega(self):
+
+        ubicacion = ", ".join(p for p in (self.direccion_entrega, self.ciudad) if p)
+        if self.recoge_en_tienda and self.punto_recogida_id:
+            return f"Recoger en {self.punto_recogida.nombre} ({ubicacion})"
+        return ubicacion
+
+    @property
+    def clase_estado(self):
+
+        # Color de la etiqueta del estado (clases de Bootstrap).
+        return CLASES_ESTADO.get(self.estado, "text-bg-secondary")
+
+    @property
     def requiere_firma(self):
 
         # Con descuento por nómina el empleado firma que recibió (soporte del descuento).
@@ -366,6 +475,13 @@ class PedidoItem(models.Model):
     subtotal = models.DecimalField(
         max_digits=12,
         decimal_places=2,
+    )
+
+    # Parte del descuento para empleados que corresponde a este producto (los combos no tienen).
+    descuento = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
     )
 
     class Meta:

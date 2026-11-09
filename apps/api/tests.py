@@ -215,8 +215,8 @@ class GestorApiTest(ApiBase):
         self.assertEqual(detalle["documento"], "1.020.304.050")
         url = reverse("api:gestor_decision", args=[solicitud["id"]])
         malo = self.api.post(url, {"vinculacion_validada": True, "estado": "APROBADA",
-                                   "cupo_disponible_reportado": "90000", "valor_aprobado": "50000"}, format="json")
-        self.assertEqual(malo.status_code, 400)               # total debe ser igual al solicitado
+                                   "cupo_disponible_reportado": "40000", "valor_aprobado": "50000"}, format="json")
+        self.assertEqual(malo.status_code, 400)               # el total (solicitado) supera el cupo
         bueno = self.api.post(url, {"vinculacion_validada": True, "estado": "APROBADA_PARCIAL",
                                     "cupo_disponible_reportado": "60000", "valor_aprobado": "50000"}, format="json")
         self.assertEqual(bueno.json()["estado"], "APROBADA_PARCIAL")

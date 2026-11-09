@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Entrega, Pedido, PedidoItem
+from .models import Entrega, Pedido, PedidoItem, PuntoRecogida
 
 
 class PedidoItemInline(admin.TabularInline):
@@ -28,6 +28,13 @@ class EntregaInline(admin.StackedInline):
         return False
 
 
+@admin.register(PuntoRecogida)
+class PuntoRecogidaAdmin(admin.ModelAdmin):
+    list_display = ("nombre", "direccion", "ciudad", "horario", "activo", "orden")
+    list_editable = ("activo", "orden")
+    search_fields = ("nombre", "direccion", "ciudad")
+
+
 @admin.register(Entrega)
 class EntregaAdmin(admin.ModelAdmin):
     list_display = ("pedido", "entregado_en", "recibido_por", "entregado_por")
@@ -52,7 +59,7 @@ class PedidoAdmin(admin.ModelAdmin):
         "ciudad",
         "created_at",
     )
-    list_filter = ("metodo_pago", "estado", "created_at")
+    list_filter = ("metodo_pago", "estado", "tipo_entrega", "punto_recogida", "created_at")
     search_fields = ("numero", "usuario__username", "usuario__email", "correo_contacto", "nombre_contacto", "telefono_contacto")
     readonly_fields = (
         "numero",

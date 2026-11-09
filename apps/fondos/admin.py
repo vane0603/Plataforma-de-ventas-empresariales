@@ -1,14 +1,87 @@
-from django.contrib import admin
+from django import forms
+from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from django.urls import path
 
 from apps.core.cifrado import huella
 
-from .models import AfiliadoFondo, CorteNomina, Finca, FondoEmpleado, HistorialSolicitud, SolicitudDescuentoNomina
+from .models import (
+    AfiliadoFondo, ConfiguracionSiigo, CorteNomina, CuentaLineaSiigo, Finca, FondoEmpleado, HistorialSolicitud,
+    SolicitudDescuentoNomina,
+)
+from .siigo_cuentas import ImportacionError, importar_cuentas_lineas
+
+
+class ImportarCuentasForm(forms.Form):
+    archivo = forms.FileField(label="Archivo Excel (.xlsx) con la tabla de líneas de Siigo")
+
+
+@admin.register(CuentaLineaSiigo)
+class CuentaLineaSiigoAdmin(admin.ModelAdmin):
+    list_display = ("linea_grupo", "nombre_linea", "cuenta_venta")
+    list_editable = ("cuenta_venta",)
+    list_display_links = ("linea_grupo",)
+    list_filter = ("linea", "nombre_linea")
+    search_fields = ("nombre_linea", "linea", "grupo")
+    list_per_page = 100
+    change_list_template = "admin/fondos/cuentalineasiigo/change_list.html"
+
+    @admin.display(description="Línea - grupo", ordering="linea")
+    def linea_grupo(self, obj):
+        return f"{obj.linea:03d} - {obj.grupo:04d}"
+
+    def get_urls(self):
+        return [
+            path("importar/", self.admin_site.admin_view(self.importar), name="fondos_cuentalineasiigo_importar"),
+        ] + super().get_urls()
+
+    def importar(self, request):
+        if not self.has_add_permission(request) or not self.has_change_permission(request):
+            raise PermissionDenied
+        form = ImportarCuentasForm(request.POST or None, request.FILES or None)
+        if request.method == "POST" and form.is_valid():
+            try:
+                resultado = importar_cuentas_lineas(form.cleaned_data["archivo"])
+            except ImportacionError as exc:
+                form.add_error("archivo", str(exc))
+            else:
+                messages.success(
+                    request,
+                    f"Tabla importada: {resultado.creadas} líneas nuevas y {resultado.actualizadas} actualizadas.",
+                )
+                for error in resultado.errores[:10]:
+                    messages.warning(request, error)
+                return redirect("admin:fondos_cuentalineasiigo_changelist")
+        return TemplateResponse(request, "admin/fondos/cuentalineasiigo/importar.html", {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": "Importar cuentas de venta por línea desde Excel",
+            "form": form,
+        })
 
 
 class FincaInline(admin.TabularInline):
     model = Finca
     extra = 1
     fields = ("nombre", "municipio", "indicaciones", "activo", "orden")
+
+
+class ConfiguracionSiigoInline(admin.StackedInline):
+    model = ConfiguracionSiigo
+    extra = 0
+    max_num = 1
+    can_delete = False
+    verbose_name_plural = "Exportación a Siigo (solo si este fondo factura en Siigo)"
+    fieldsets = (
+        (None, {"fields": ("activo", "empresa", ("tipo_comprobante", "codigo_comprobante", "siguiente_numero"))}),
+        ("Códigos", {"fields": (("vendedor", "ciudad", "zona"), ("centro_costo", "subcentro_costo", "sucursal"),
+                                ("bodega", "forma_pago", "dias_vencimiento"))}),
+        ("Cuentas contables", {"fields": (("cuenta_ingreso", "cuenta_cartera"), ("cuenta_inventario", "cuenta_costo"), "cuenta_descuento"),
+                               "description": "La cuenta de ingresos de cada producto se toma de <b>Cuentas de venta por línea Siigo</b> "
+                                              "según su línea y grupo; la de aquí se usa solo si la línea no está en esa tabla."}),
+    )
 
 
 @admin.register(Finca)
@@ -21,13 +94,14 @@ class FincaAdmin(admin.ModelAdmin):
 
 @admin.register(FondoEmpleado)
 class FondoEmpleadoAdmin(admin.ModelAdmin):
-    inlines = [FincaInline]
+    inlines = [FincaInline, ConfiguracionSiigoInline]
     list_display = ("nombre", "nit", "modo_verificacion", "decision_automatica", "correo", "activo")
     list_filter = ("activo", "modo_verificacion", "decision_automatica")
     search_fields = ("nombre", "nit", "responsable", "correo")
     filter_horizontal = ("gestores",)
     fieldsets = (
         (None, {"fields": ("nombre", "nit", "correo", "telefono", "responsable", "activo", "observaciones")}),
+        ("Descuento para empleados", {"fields": ("descuento_empleados",)}),
         ("Gestores", {"fields": ("gestores",)}),
         ("Verificación de vinculación", {
             "fields": ("modo_verificacion", "decision_automatica", "api_url", "api_token_env"),

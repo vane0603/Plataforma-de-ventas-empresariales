@@ -36,7 +36,7 @@
       <dt class="col-sm-4">Fecha y hora</dt><dd class="col-sm-8">{{ entrega.entregado_en|date:"d/m/Y H:i" }}</dd>
       <dt class="col-sm-4">Recibió</dt><dd class="col-sm-8">{{ entrega.recibido_por }}</dd>
       <dt class="col-sm-4">Lugar de entrega</dt>
-      <dd class="col-sm-8">{% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}{% endif %}</dd>
+      <dd class="col-sm-8">{% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.lugar_entrega }}{% endif %}</dd>
       <dt class="col-sm-4">Medio de pago</dt><dd class="col-sm-8">{{ pedido.get_metodo_pago_display }}{% if solicitud %} · {{ solicitud.get_estado_display }} (${{ solicitud.valor_aprobado|default:0|floatformat:"0g" }} por nómina){% endif %}</dd>
       {% if entrega.entregado_por %}<dt class="col-sm-4">Entregó</dt><dd class="col-sm-8">{{ entrega.entregado_por.get_full_name|default:entrega.entregado_por.username }}</dd>{% endif %}
       {% if entrega.observaciones %}<dt class="col-sm-4">Observaciones</dt><dd class="col-sm-8">{{ entrega.observaciones }}</dd>{% endif %}

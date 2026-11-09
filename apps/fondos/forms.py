@@ -181,6 +181,11 @@ class RespuestaFondoForm(forms.Form):
         if vinculacion is False and estado and estado != S.ESTADO_RECHAZADA:
             self.add_error("estado", "Si la persona no está vinculada, la solicitud debe rechazarse.")
 
+        # Aprobación total: el valor aprobado es siempre el solicitado exacto (con sus centavos).
+        if estado == S.ESTADO_APROBADA:
+            aprobado = cleaned["valor_aprobado"] = solicitado
+            self.errors.pop("valor_aprobado", None)
+
         if estado in (S.ESTADO_APROBADA, S.ESTADO_APROBADA_PARCIAL):
             if cupo is None:
                 self.add_error("cupo_disponible_reportado", "Informe el cupo disponible.")
@@ -190,8 +195,6 @@ class RespuestaFondoForm(forms.Form):
                 self.add_error("valor_aprobado", "El valor aprobado no puede superar el valor solicitado.")
             elif cupo is not None and aprobado > cupo:
                 self.add_error("valor_aprobado", "El valor aprobado no puede superar el cupo reportado.")
-            elif estado == S.ESTADO_APROBADA and aprobado != solicitado:
-                self.add_error("valor_aprobado", "Para aprobación total, el valor aprobado debe ser igual al solicitado.")
             elif estado == S.ESTADO_APROBADA_PARCIAL and aprobado >= solicitado:
                 self.add_error("valor_aprobado", "Para aprobación parcial, el valor debe ser menor al solicitado.")
 

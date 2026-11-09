@@ -100,9 +100,51 @@
       <!-- 3. Entrega -->
       <section class="tc-panel">
         <h2><span class="tc-paso">3</span> Entrega</h2>
+        {% if puntos_recogida %}
+          <div class="row g-2 mb-2" id="tc-tipo-entrega">
+            {% with tipo=form.tipo_entrega.value|default:"DOMICILIO" %}
+              <div class="col-sm-6">
+                <label class="tc-metodo h-100 mb-0">
+                  <input type="radio" name="tipo_entrega" value="DOMICILIO" {% if tipo != "TIENDA" %}checked{% endif %}>
+                  <i class="bi bi-truck"></i>
+                  <span><strong>Envío a domicilio</strong><span class="d-block small text-muted">Lo llevamos a la dirección que indiques.</span></span>
+                </label>
+              </div>
+              <div class="col-sm-6">
+                <label class="tc-metodo h-100 mb-0">
+                  <input type="radio" name="tipo_entrega" value="TIENDA" {% if tipo == "TIENDA" %}checked{% endif %}>
+                  <i class="bi bi-shop"></i>
+                  <span><strong>Recoger en tienda</strong><span class="d-block small text-muted">Te avisamos cuando esté listo.</span></span>
+                </label>
+              </div>
+            {% endwith %}
+          </div>
+          <div id="tc-puntos" hidden>
+            <p class="fw-semibold mb-2 mt-3">¿Dónde lo recoges?</p>
+            {% with punto_sel=form.punto_recogida.value|stringformat:"s" %}
+              {% for punto in puntos_recogida %}
+                <label class="tc-metodo">
+                  <input type="radio" name="punto_recogida" value="{{ punto.id }}" {% if punto_sel == punto.id|stringformat:"s" or puntos_recogida|length == 1 %}checked{% endif %}>
+                  <i class="bi bi-geo-alt"></i>
+                  <span>
+                    <strong>{{ punto.nombre }}</strong>
+                    <span class="d-block small">{{ punto.ubicacion }}</span>
+                    {% if punto.horario %}<span class="d-block small text-muted"><i class="bi bi-clock"></i> {{ punto.horario }}</span>{% endif %}
+                    {% if punto.indicaciones %}<span class="d-block small text-muted">{{ punto.indicaciones }}</span>{% endif %}
+                  </span>
+                </label>
+              {% endfor %}
+            {% endwith %}
+            {% for error in form.punto_recogida.errors %}<div class="tc-error">{{ error }}</div>{% endfor %}
+          </div>
+        {% endif %}
         <div class="tc-aviso-entrega mb-3" id="tc-aviso-general">
           <i class="bi bi-truck"></i>
           <span>Te contactaremos para coordinar la entrega.</span>
+        </div>
+        <div class="tc-aviso-entrega mb-3" id="tc-aviso-tienda" hidden>
+          <i class="bi bi-bell"></i>
+          <span>Te avisaremos por correo cuando tu pedido esté <strong>listo para recoger</strong>. Lleva el número del pedido.</span>
         </div>
         <div id="tc-aviso-finca" hidden>
           <div class="tc-aviso-entrega mb-2">
@@ -134,10 +176,10 @@
             <input class="form-control form-control-lg" id="id_direccion" name="direccion_entrega" autocomplete="street-address" required value="{{ form.direccion_entrega.value|default:'' }}" placeholder="Ej.: Carrera 1A # 8A-37, barrio, apto">
             {% for error in form.direccion_entrega.errors %}<div class="tc-error">{{ error }}</div>{% endfor %}
           </div>
-          <div class="col-12">
-            <label class="form-label fw-semibold" for="id_observaciones">Observaciones (opcional)</label>
-            <textarea class="form-control" id="id_observaciones" name="observaciones" rows="2">{{ form.observaciones.value|default:'' }}</textarea>
-          </div>
+        </div>
+        <div class="mt-3" id="tc-observaciones">
+          <label class="form-label fw-semibold" for="id_observaciones">Observaciones (opcional)</label>
+          <textarea class="form-control" id="id_observaciones" name="observaciones" rows="2">{{ form.observaciones.value|default:'' }}</textarea>
         </div>
       </section>
     </div>
@@ -184,10 +226,19 @@
       const metodo = (form.querySelector('input[name="metodo_pago"]:checked') || {}).value;
       const nominaSinSesion = !autenticado && metodo === "NOMINA";
       const esNomina = metodo === "NOMINA";
-      document.getElementById("tc-direccion").hidden = esNomina;
+      // Recoger en tienda: no aplica con nómina (se entrega en la finca).
+      const tipoEntrega = document.getElementById("tc-tipo-entrega");
+      const tienda = !esNomina && (form.querySelector('input[name="tipo_entrega"]:checked') || {}).value === "TIENDA";
+      if (tipoEntrega) {
+        tipoEntrega.hidden = esNomina;
+        document.getElementById("tc-puntos").hidden = !tienda;
+      }
+      document.getElementById("tc-direccion").hidden = esNomina || tienda;
+      document.getElementById("tc-observaciones").hidden = esNomina;
       document.getElementById("tc-aviso-finca").hidden = !esNomina;
-      document.getElementById("tc-aviso-general").hidden = esNomina;
-      ["id_direccion", "id_departamento", "id_ciudad"].forEach((id) => { document.getElementById(id).required = !esNomina; });
+      document.getElementById("tc-aviso-general").hidden = esNomina || tienda;
+      document.getElementById("tc-aviso-tienda").hidden = !tienda;
+      ["id_direccion", "id_departamento", "id_ciudad"].forEach((id) => { document.getElementById(id).required = !esNomina && !tienda; });
       contacto.hidden = nominaSinSesion;
       normal.hidden = nominaSinSesion;
       login.hidden = !nominaSinSesion;

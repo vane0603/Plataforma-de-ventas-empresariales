@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
 from apps.core.campos import TextoCifrado
@@ -63,6 +64,17 @@ class FondoEmpleado(models.Model):
             "El token nunca se guarda en la base de datos."
         ),
     )
+    descuento_empleados = models.DecimalField(
+        "descuento para empleados (%)",
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text=(
+            "Porcentaje que se descuenta de los productos (no de los combos) cuando un empleado compra "
+            "por nómina con este fondo. 0 = sin descuento. Si el fondo rechaza la solicitud, el descuento se quita."
+        ),
+    )
     activo = models.BooleanField(default=True)
     observaciones = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -75,6 +87,88 @@ class FondoEmpleado(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class ConfiguracionSiigo(models.Model):
+    """
+    Datos para exportar los pedidos de un fondo como facturas al "modelo de importación de
+    movimiento contable" de Siigo. Solo los fondos con esta configuración activa se exportan.
+    Los valores por defecto son los del archivo de ejemplo de MACS.
+    """
+
+    fondo = models.OneToOneField(FondoEmpleado, on_delete=models.CASCADE, related_name="siigo")
+    activo = models.BooleanField(default=True)
+    empresa = models.CharField(
+        max_length=200, default="MACS COMERCIALIZADORA Y DISTRIBUIDORA S.A.S",
+        help_text="Razón social que aparece en el encabezado del archivo.",
+    )
+    tipo_comprobante = models.CharField(max_length=1, default="F", help_text="F = factura de venta.")
+    codigo_comprobante = models.PositiveIntegerField(default=3)
+    siguiente_numero = models.PositiveIntegerField(
+        "próximo número de factura", default=1,
+        help_text="Consecutivo de Siigo que recibirá el próximo pedido exportado. Se actualiza solo.",
+    )
+    vendedor = models.PositiveIntegerField("código del vendedor", default=500)
+    ciudad = models.PositiveIntegerField("código de la ciudad", default=666)
+    zona = models.PositiveIntegerField("código de la zona", default=161)
+    centro_costo = models.PositiveIntegerField("centro de costo", default=1)
+    subcentro_costo = models.PositiveIntegerField("subcentro de costo", default=1)
+    sucursal = models.PositiveIntegerField(default=0)
+    bodega = models.PositiveIntegerField(
+        "bodega por defecto", default=1, help_text="Se usa si el producto no tiene su propia bodega Siigo.",
+    )
+    forma_pago = models.PositiveIntegerField("forma de pago", default=3)
+    dias_vencimiento = models.PositiveIntegerField(
+        "días de vencimiento", default=0, help_text="Plazo de la cuenta por cobrar. 0 = vence el mismo día.",
+    )
+    # La cuenta de ingresos depende de la línea/grupo del producto (tabla "Cuentas de venta por línea
+    # Siigo"); esta se usa solo para los productos cuya línea no está en esa tabla.
+    cuenta_ingreso = models.PositiveBigIntegerField("cuenta de ingresos por defecto (crédito)", default=4135950400)
+    cuenta_cartera = models.PositiveBigIntegerField("cuenta por cobrar (débito)", default=1365950100)
+    cuenta_inventario = models.PositiveBigIntegerField("cuenta de inventario (crédito)", default=1435010400)
+    cuenta_costo = models.PositiveBigIntegerField("cuenta de costo de ventas (débito)", default=6135950400)
+    cuenta_descuento = models.PositiveBigIntegerField("cuenta de descuento a empleados (débito)", default=4135980000)
+
+    class Meta:
+        verbose_name = "Configuración de Siigo"
+        verbose_name_plural = "Configuración de Siigo"
+
+    def __str__(self):
+        return f"Siigo · {self.fondo}"
+
+    @property
+    def comprobante(self):
+        return f"{self.tipo_comprobante}-{self.codigo_comprobante:03d}"
+
+
+validar_cuenta = RegexValidator(r"^\d{1,10}$", "Escribe solo números (hasta 10 dígitos).")
+
+
+def cuenta_siigo(texto):
+    """Cuenta como la usa la factura de Siigo: 10 dígitos, completando con ceros (41359504 -> 4135950400)."""
+    digitos = "".join(c for c in str(texto or "") if c.isdigit())
+    return int(digitos.ljust(10, "0")) if digitos.strip("0") else None
+
+
+class CuentaLineaSiigo(models.Model):
+    """
+    Cuenta de venta (ingreso) de Siigo por línea y grupo de producto (la tabla de líneas de Siigo).
+    El código Siigo del producto 700-15-45 usa la fila línea 700 / grupo 15.
+    """
+
+    linea = models.PositiveIntegerField("línea")
+    grupo = models.PositiveIntegerField()
+    nombre_linea = models.CharField("nombre de la línea", max_length=100, blank=True)
+    cuenta_venta = models.CharField("cta. venta", max_length=10, validators=[validar_cuenta])
+
+    class Meta:
+        verbose_name = "Cuenta de venta por línea Siigo"
+        verbose_name_plural = "Cuentas de venta por línea Siigo"
+        ordering = ["linea", "grupo"]
+        constraints = [models.UniqueConstraint(fields=["linea", "grupo"], name="cuenta_linea_siigo_unica")]
+
+    def __str__(self):
+        return f"{self.linea:03d}-{self.grupo:04d} {self.nombre_linea}".strip()
 
 
 class Finca(models.Model):

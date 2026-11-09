@@ -8,3 +8,6 @@ privado/
 # Respaldos locales de la base de datos
 *.sqlite3
 respaldo*.json
+# Producción
+staticfiles/
+logs/

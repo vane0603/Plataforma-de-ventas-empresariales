@@ -7,7 +7,11 @@
     <p class="text-muted">Estado: <strong>{{ pedido.get_estado_display }}</strong> · Medio de pago: {{ pedido.get_metodo_pago_display }}{% if pedido.metodo_pago_saldo %} + {{ pedido.get_metodo_pago_saldo_display }} (saldo){% endif %}</p>
     {% if pedido.en_camino %}
       <div class="alert alert-info d-flex align-items-center gap-2"><i class="bi bi-truck fs-4"></i>
-        <div><strong>Tu pedido va en camino.</strong> Salió para entrega el {{ pedido.despachado_en|date:"d/m/Y" }} a las {{ pedido.despachado_en|date:"H:i" }}.</div>
+        {% if pedido.recoge_en_tienda %}
+          <div><strong>Tu pedido está listo para recoger</strong> desde el {{ pedido.despachado_en|date:"d/m/Y" }} a las {{ pedido.despachado_en|date:"H:i" }}.</div>
+        {% else %}
+          <div><strong>Tu pedido va en camino.</strong> Salió para entrega el {{ pedido.despachado_en|date:"d/m/Y" }} a las {{ pedido.despachado_en|date:"H:i" }}.</div>
+        {% endif %}
       </div>
     {% endif %}
 
@@ -17,6 +21,10 @@
     </table></div>
 
     <div class="text-end">
+      {% if pedido.descuento %}
+        <div>Subtotal: ${{ pedido.subtotal|floatformat:"0g" }}</div>
+        <div style="color:var(--tc-acento)">Descuento empleados: −${{ pedido.descuento|floatformat:"0g" }}</div>
+      {% endif %}
       <div class="fs-4"><strong>Total: ${{ pedido.total|floatformat:0 }}</strong></div>
       {% if pedido.metodo_pago == 'NOMINA' and pedido.valor_nomina %}
         <div>Cubierto por nómina: <strong>${{ pedido.valor_nomina|floatformat:0 }}</strong></div>
@@ -52,7 +60,11 @@
     {% if pedido.estado != 'ENTREGADO' %}
     <div class="d-flex gap-2 align-items-center mt-4 p-3 rounded-3" style="background:var(--tc-acento-suave)">
       <i class="bi bi-calendar-check fs-4" style="color:var(--tc-acento-2)"></i>
-      <span>{% if pedido.metodo_pago == 'NOMINA' %}<strong>La fecha de entrega se acuerda con el fondo de empleados.</strong>{% else %}<strong>Te contactaremos para coordinar la entrega.</strong>{% endif %} Entrega en: {{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}.</span>
+      {% if pedido.recoge_en_tienda %}
+        <span><strong>Recoges tu pedido en {{ pedido.punto_recogida.nombre }}:</strong> {{ pedido.punto_recogida.ubicacion }}.{% if pedido.punto_recogida.horario %} Horario: {{ pedido.punto_recogida.horario }}.{% endif %} {% if not pedido.despachado_en %}Te avisaremos cuando esté listo.{% endif %}{% if pedido.punto_recogida.indicaciones %} {{ pedido.punto_recogida.indicaciones }}{% endif %}</span>
+      {% else %}
+        <span>{% if pedido.metodo_pago == 'NOMINA' %}<strong>La fecha de entrega se acuerda con el fondo de empleados.</strong>{% else %}<strong>Te contactaremos para coordinar la entrega.</strong>{% endif %} Entrega en: {{ pedido.lugar_entrega }}.</span>
+      {% endif %}
     </div>
     {% endif %}
 

@@ -40,6 +40,8 @@ PLANTILLAS_WHATSAPP = {
     N.EVENTO_PEDIDO_DESPACHADO: "tio_pedido_en_camino",
     N.EVENTO_PEDIDO_ENTREGADO: "tio_pedido_entregado",
 }
+# El despacho de un pedido que se recoge en tienda usa otra plantilla.
+PLANTILLA_LISTO_RECOGER = "tio_pedido_listo_recoger"
 
 
 def pesos(valor):
@@ -59,6 +61,8 @@ def punto_entrega(pedido):
     solicitud = getattr(pedido, "solicitud_nomina", None)
     if solicitud is not None and solicitud.finca_id:
         return f"{solicitud.finca} ({solicitud.fondo.nombre})"
+    if pedido.recoge_en_tienda and pedido.punto_recogida_id:
+        return f"{pedido.punto_recogida.nombre} ({pedido.punto_recogida.ubicacion})"
     return ", ".join(p for p in (pedido.direccion_entrega, pedido.ciudad) if p)
 
 
@@ -75,6 +79,8 @@ def _pedido_creado(n, nombre):
     pedido = n.pedido
     if pedido.metodo_pago == pedido.METODO_NOMINA:
         aviso = "La fecha de entrega se acuerda con tu fondo de empleados."
+    elif pedido.recoge_en_tienda:
+        aviso = f"Lo recoges en {punto_entrega(pedido)}. Te avisaremos cuando esté listo."
     else:
         aviso = "Te contactaremos para coordinar la entrega."
     return Mensaje(
@@ -157,8 +163,34 @@ def _pago_aprobado(n, nombre):
     )
 
 
+def _pedido_listo_para_recoger(pedido, nombre):
+    punto = pedido.punto_recogida
+    detalle = [("Dónde", f"{punto.nombre} - {punto.ubicacion}")]
+    if punto.horario:
+        detalle.append(("Horario", punto.horario))
+    notas = []
+    if pedido.estado == pedido.ESTADO_PENDIENTE_PAGO:
+        notas.append(f"Ten listo el pago de {pesos(pedido.saldo_pendiente)} al recoger.")
+    if punto.indicaciones:
+        notas.append(punto.indicaciones)
+    return Mensaje(
+        asunto=f"Tu pedido {pedido.numero} está listo para recoger",
+        titulo="¡Tu pedido está listo para recoger!",
+        saludo=f"Hola {nombre},",
+        parrafos=[f"Ya puedes recoger tu pedido {pedido.numero}. Presenta el número del pedido al reclamarlo."],
+        detalle=detalle,
+        nota=" ".join(notas),
+        boton_texto="Ver mi pedido",
+        boton_url=enlace_pedido(pedido),
+        plantilla=PLANTILLA_LISTO_RECOGER,
+        parametros=[nombre, pedido.numero, punto_entrega(pedido)],
+    )
+
+
 def _pedido_despachado(n, nombre):
     pedido = n.pedido
+    if pedido.recoge_en_tienda and pedido.punto_recogida_id:
+        return _pedido_listo_para_recoger(pedido, nombre)
     punto = punto_entrega(pedido)
     nota = ""
     if pedido.estado == pedido.ESTADO_PENDIENTE_PAGO:
@@ -209,5 +241,5 @@ CONSTRUCTORES = {
 
 def construir_mensaje(notificacion):
     mensaje = CONSTRUCTORES[notificacion.evento](notificacion, nombre_destinatario(notificacion))
-    mensaje.plantilla = PLANTILLAS_WHATSAPP[notificacion.evento]
+    mensaje.plantilla = mensaje.plantilla or PLANTILLAS_WHATSAPP[notificacion.evento]
     return mensaje

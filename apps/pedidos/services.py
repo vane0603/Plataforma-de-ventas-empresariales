@@ -26,11 +26,12 @@ class PedidoError(Exception):
 
 def crear_pedido_desde_carrito(
     *, carrito, usuario, metodo_pago, direccion, ciudad, observaciones="", contacto=None, autoriza_datos=False,
-    avisos_whatsapp=False,
+    avisos_whatsapp=False, punto_recogida=None,
 ):
     """
     `usuario` puede ser None (compra como invitado) salvo con descuento por nómina.
     `contacto` = {"nombre", "correo", "telefono"}; obligatorio para invitados.
+    Con `punto_recogida` el cliente recoge en tienda y no se pide dirección.
     """
     contacto = contacto or {}
     if usuario is not None and not usuario.is_authenticated:
@@ -44,7 +45,13 @@ def crear_pedido_desde_carrito(
     if usuario is None and not autoriza_datos:
         raise PedidoError("Debes autorizar el tratamiento de tus datos para continuar.")
     # Con nómina la dirección la define la finca elegida en la solicitud.
-    if metodo_pago != Pedido.METODO_NOMINA:
+    if punto_recogida is not None:
+        if metodo_pago == Pedido.METODO_NOMINA:
+            raise PedidoError("Con descuento por nómina el pedido se entrega en la finca; no se puede recoger en tienda.")
+        if not punto_recogida.activo:
+            raise PedidoError("El punto de recogida elegido ya no está disponible.")
+        direccion, ciudad = f"{punto_recogida.nombre} - {punto_recogida.direccion}"[:250], punto_recogida.ciudad
+    elif metodo_pago != Pedido.METODO_NOMINA:
         if not direccion:
             raise PedidoError("Debes ingresar la dirección de entrega.")
         if not ciudad:
@@ -100,6 +107,8 @@ def crear_pedido_desde_carrito(
             total=total,
             direccion_entrega=direccion,
             ciudad=ciudad,
+            tipo_entrega=Pedido.TIPO_TIENDA if punto_recogida is not None else Pedido.TIPO_DOMICILIO,
+            punto_recogida=punto_recogida,
             observaciones=observaciones,
             nombre_contacto=contacto.get("nombre", "")[:150],
             correo_contacto=contacto.get("correo", ""),

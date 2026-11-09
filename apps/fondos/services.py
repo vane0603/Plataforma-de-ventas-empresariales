@@ -11,11 +11,12 @@ import csv
 import io
 import logging
 from dataclasses import dataclass, field
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import F
 from django.urls import reverse
 from django.utils import timezone
 
@@ -44,6 +45,43 @@ ESTADOS_APROBADOS = (
 
 
 # =====================================================
+# DESCUENTO PARA EMPLEADOS
+# =====================================================
+
+def descuento_item(item, porcentaje):
+    """El % del fondo sobre un producto, redondeado al peso. Los combos (promociones) no tienen descuento."""
+    porcentaje = Decimal(porcentaje or 0)
+    if porcentaje <= 0 or item.combo_id:
+        return Decimal("0")
+    return (item.subtotal * porcentaje / 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+
+
+def descuento_pedido(items, porcentaje):
+    return sum((descuento_item(item, porcentaje) for item in items), Decimal("0"))
+
+
+def aplicar_descuento_empleados(pedido, fondo):
+    """Recalcula el descuento del pedido según el fondo elegido (el pedido debe estar bloqueado)."""
+    from apps.pedidos.models import PedidoItem
+
+    items = list(pedido.items.all())
+    for item in items:
+        item.descuento = descuento_item(item, fondo.descuento_empleados)
+    PedidoItem.objects.bulk_update(items, ["descuento"])
+    pedido.descuento = sum((item.descuento for item in items), Decimal("0"))
+    pedido.total = pedido.subtotal - pedido.descuento
+    return pedido
+
+
+def quitar_descuento_empleados(pedido_id):
+    """Si el fondo rechaza, el comprador no queda verificado como empleado: paga el precio normal."""
+    from apps.pedidos.models import Pedido, PedidoItem
+
+    PedidoItem.objects.filter(pedido_id=pedido_id).update(descuento=0)
+    Pedido.objects.filter(pk=pedido_id).update(descuento=0, total=F("subtotal"))
+
+
+# =====================================================
 # CREACIÓN DE LA SOLICITUD
 # =====================================================
 
@@ -66,6 +104,7 @@ def crear_solicitud(pedido, form, usuario):
         solicitud = form.save(commit=False)
         solicitud.usuario = usuario
         solicitud.pedido = pedido
+        aplicar_descuento_empleados(pedido, solicitud.fondo)
         solicitud.valor_solicitado = pedido.total
         solicitud.estado = SolicitudDescuentoNomina.ESTADO_PENDIENTE
         solicitud.autorizacion_datos = True
@@ -75,7 +114,7 @@ def crear_solicitud(pedido, form, usuario):
         registrar_historial(solicitud, HistorialSolicitud.EVENTO_CREADA, usuario=usuario)
 
         pedido.estado = Pedido.ESTADO_EN_REVISION_NOMINA
-        campos = ["estado", "updated_at"]
+        campos = ["estado", "descuento", "total", "updated_at"]
         if solicitud.finca_id:
             # Con nómina se entrega en la finca elegida.
             pedido.direccion_entrega = f"Finca {solicitud.finca.nombre}"[:250]
@@ -228,6 +267,8 @@ def aplicar_decision(
                 valor_nomina=solicitud.valor_aprobado,
                 updated_at=timezone.now(),
             )
+            if estado == S.ESTADO_RECHAZADA:
+                quitar_descuento_empleados(solicitud.pedido_id)
 
         registrar_historial(
             solicitud,

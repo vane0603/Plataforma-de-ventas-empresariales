@@ -1,0 +1,87 @@
+{% extends "layouts/base.html" %}
+{% block title %}Reporte de pedidos · Tío Campo{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <h1 class="h3 fw-bold mb-0" style="color:var(--tc-primario)"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Reporte de pedidos</h1>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'pedidos:siigo' %}"><i class="bi bi-file-earmark-arrow-up me-1"></i>Exportar a Siigo</a>
+      {% if not filtros.errores %}
+        <a class="btn btn-tio" href="{{ url_excel }}"><i class="bi bi-download me-1"></i>Descargar Excel</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-6 col-md-2">
+      <label class="form-label small mb-1" for="desde">Desde</label>
+      <input type="date" id="desde" name="desde" value="{{ filtros.desde|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small mb-1" for="hasta">Hasta</label>
+      <input type="date" id="hasta" name="hasta" value="{{ filtros.hasta|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small mb-1" for="estado">Estado</label>
+      <select id="estado" name="estado" class="form-select">
+        <option value="">Todos</option>
+        {% for valor, nombre in estados %}<option value="{{ valor }}" {% if filtros.estado == valor %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small mb-1" for="metodo">Medio de pago</label>
+      <select id="metodo" name="metodo" class="form-select">
+        <option value="">Todos</option>
+        {% for valor, nombre in metodos %}<option value="{{ valor }}" {% if filtros.metodo == valor %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small mb-1" for="tipo">Entrega</label>
+      <select id="tipo" name="tipo" class="form-select">
+        <option value="">Todas</option>
+        {% for valor, nombre in tipos %}<option value="{{ valor }}" {% if filtros.tipo == valor %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2 d-flex align-items-end gap-2">
+      <button type="submit" class="btn btn-outline-secondary flex-fill">Filtrar</button>
+      <a href="{% url 'pedidos:reporte' %}" class="btn btn-link px-1">Limpiar</a>
+    </div>
+  </form>
+
+  {% for error in filtros.errores %}<div class="alert alert-warning">{{ error }}</div>{% endfor %}
+
+  <div class="row g-2 mb-3">
+    <div class="col-6 col-md-3"><div class="product-card p-3"><div class="small text-muted">Pedidos</div><div class="fs-4 fw-bold">{{ resumen.cantidad }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="product-card p-3"><div class="small text-muted">Valor total <span class="text-nowrap">(sin cancelados)</span></div><div class="fs-4 fw-bold">${{ resumen.total|floatformat:"0g" }}</div></div></div>
+    <div class="col-12 col-md-6"><div class="product-card p-3 h-100 d-flex flex-wrap gap-2 align-items-center">
+      {% for fila in resumen.por_estado %}<span class="badge text-bg-light border">{{ fila.estado }}: {{ fila.cantidad }}</span>{% empty %}<span class="small text-muted">Sin pedidos con estos filtros.</span>{% endfor %}
+    </div></div>
+  </div>
+
+  {% if pedidos %}
+    <div class="table-responsive product-card p-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr>
+          <th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Medio de pago</th><th>Estado</th><th class="text-end">Total</th>
+        </tr></thead>
+        <tbody>
+          {% for pedido in pedidos %}
+            <tr>
+              <td class="fw-semibold text-nowrap">{{ pedido.numero }}</td>
+              <td class="text-nowrap">{{ pedido.created_at|date:"d/m/Y H:i" }}</td>
+              <td>{{ pedido.nombre_cliente }}</td>
+              <td>{{ pedido.get_metodo_pago_display }}</td>
+              <td><span class="badge {{ pedido.clase_estado }}">{{ pedido.get_estado_display }}</span></td>
+              <td class="text-end text-nowrap">${{ pedido.total|floatformat:"0g" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if resumen.cantidad > max_vista_previa %}
+      <p class="small text-muted mt-2">Se muestran los {{ max_vista_previa }} más recientes. El Excel incluye los {{ resumen.cantidad }}.</p>
+    {% endif %}
+    <p class="small text-muted mt-2"><i class="bi bi-shield-lock me-1"></i>El archivo contiene datos personales: guárdalo en un lugar seguro y no lo compartas (Ley 1581 de 2012).</p>
+  {% endif %}
+</div>
+{% endblock %}

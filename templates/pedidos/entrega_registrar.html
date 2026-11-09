@@ -27,7 +27,7 @@
 
     <div class="mt-3 p-3 rounded-3" style="background:var(--tc-primario-suave)">
       <div class="fw-semibold"><i class="bi bi-geo-alt-fill" style="color:var(--tc-primario)"></i>
-        {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}{% endif %}
+        {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.lugar_entrega }}{% endif %}
       </div>
       {% if solicitud.finca.indicaciones %}<div class="small mt-1">{{ solicitud.finca.indicaciones }}</div>{% endif %}
       <div class="small mt-1">Cliente: {% if solicitud %}{{ solicitud.nombre_completo }}{% else %}{{ pedido.nombre_cliente }}{% endif %}
@@ -41,15 +41,15 @@
 
     {% if pedido.despachado_en %}
       <div class="small mt-3"><i class="bi bi-truck" style="color:var(--tc-primario)"></i>
-        En camino desde {{ pedido.despachado_en|date:"d/m/Y H:i" }}{% if pedido.despachado_por %} · {{ pedido.despachado_por.get_full_name|default:pedido.despachado_por.username }}{% endif %}
+        {{ pedido.texto_despacho }} desde {{ pedido.despachado_en|date:"d/m/Y H:i" }}{% if pedido.despachado_por %} · {{ pedido.despachado_por.get_full_name|default:pedido.despachado_por.username }}{% endif %}
       </div>
     {% else %}
       <form method="post" action="{% url 'pedidos:entregas_despachar' %}" class="mt-3 d-flex flex-wrap align-items-center gap-2">
         {% csrf_token %}
         <input type="hidden" name="pedidos" value="{{ pedido.id }}">
         <input type="hidden" name="volver" value="{{ request.get_full_path }}">
-        <button class="btn btn-outline-success rounded-pill" type="submit"><i class="bi bi-truck me-1"></i>Marcar como despachado</button>
-        <span class="small text-muted">Avisa al cliente que su pedido va en camino.</span>
+        <button class="btn btn-outline-success rounded-pill" type="submit">{% if pedido.recoge_en_tienda %}<i class="bi bi-shop me-1"></i>Marcar como listo para recoger{% else %}<i class="bi bi-truck me-1"></i>Marcar como despachado{% endif %}</button>
+        <span class="small text-muted">{% if pedido.recoge_en_tienda %}Avisa al cliente que ya puede recogerlo.{% else %}Avisa al cliente que su pedido va en camino.{% endif %}</span>
       </form>
     {% endif %}
 

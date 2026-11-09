@@ -79,6 +79,9 @@
               {% if perms.pedidos.registrar_entrega %}
                 <li><a class="dropdown-item" href="{% url 'pedidos:entregas' %}"><i class="bi bi-truck me-2"></i>Entregas</a></li>
               {% endif %}
+              {% if perms.pedidos.view_pedido %}
+                <li><a class="dropdown-item" href="{% url 'pedidos:reporte' %}"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Reporte de pedidos</a></li>
+              {% endif %}
               <li><hr class="dropdown-divider"></li>
               <li>
                 <form method="post" action="{% url 'logout' %}">{% csrf_token %}

@@ -43,7 +43,13 @@
         {% for item in pedido.items.all %}
           <div class="mb-3"><strong>{{ item.producto_nombre }}</strong><div class="small text-muted">{{ item.presentacion }} · {{ item.cantidad }} unidad(es)</div><div>${{ item.subtotal|floatformat:0 }}</div></div>
         {% endfor %}
-        <hr><div class="d-flex justify-content-between"><strong>Valor solicitado</strong><span class="price">${{ total|floatformat:0 }}</span></div>
+        <hr>
+        <div id="tc-descuento" hidden>
+          <div class="d-flex justify-content-between"><span>Subtotal</span><span>${{ total|floatformat:"0g" }}</span></div>
+          <div class="d-flex justify-content-between" style="color:var(--tc-acento)"><span>Descuento empleados (<span data-porcentaje></span>%)</span><span>−$<span data-valor></span></span></div>
+          <div class="small text-muted mb-2">Aplica a los productos; los combos no tienen descuento.</div>
+        </div>
+        <div class="d-flex justify-content-between"><strong>Valor solicitado</strong><span class="price">$<span id="tc-valor-solicitado">{{ total|floatformat:"0g" }}</span></span></div>
       </div>
     </div>
   </div>
@@ -51,7 +57,29 @@
 {% endblock %}
 
 {% block js %}
+{{ descuentos_fondos|json_script:"tc-descuentos" }}
 <script>
+  // Descuento para empleados del fondo elegido (el valor final lo calcula el servidor al enviar).
+  (function () {
+    const fondo = document.getElementById("id_fondo");
+    const caja = document.getElementById("tc-descuento");
+    if (!fondo || !caja) return;
+    const descuentos = JSON.parse(document.getElementById("tc-descuentos").textContent);
+    const total = {{ total|floatformat:0 }};
+    const pesos = (n) => n.toLocaleString("es-CO");
+    function actualizar() {
+      const d = descuentos[fondo.value];
+      caja.hidden = !d || !d.valor;
+      if (d && d.valor) {
+        caja.querySelector("[data-porcentaje]").textContent = d.porcentaje;
+        caja.querySelector("[data-valor]").textContent = pesos(d.valor);
+      }
+      document.getElementById("tc-valor-solicitado").textContent = pesos(total - (d ? d.valor : 0));
+    }
+    fondo.addEventListener("change", actualizar);
+    actualizar();
+  })();
+
   // Muestra solo las fincas del fondo elegido.
   (function () {
     const fondo = document.getElementById("id_fondo");

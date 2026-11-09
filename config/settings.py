@@ -97,6 +97,9 @@ MIDDLEWARE = [
     # Debe ir primero para aplicar cabeceras de seguridad a todas las respuestas.
     "django.middleware.security.SecurityMiddleware",
 
+    # Sirve /static/ en producción (Waitress no sirve archivos estáticos).
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
 
     "django.middleware.common.CommonMiddleware",
@@ -256,6 +259,10 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = (
     BASE_DIR / "media"
 )
+
+# Waitress no sirve /media/ (imágenes de productos y banners): con SERVIR_MEDIA=1
+# Django las entrega. Suficiente para el tráfico de la tienda; las firmas nunca pasan por aquí.
+SERVIR_MEDIA = os.getenv("SERVIR_MEDIA", "0") == "1"
 
 # Archivos privados (firmas de entrega): fuera de MEDIA_ROOT para que el
 # servidor web nunca los publique. Inclúyalos en las copias de seguridad.
@@ -524,6 +531,11 @@ if not DEBUG:
         if origen.strip()
     ]
     STATIC_ROOT = BASE_DIR / "staticfiles"
+    # Nombres con huella (tienda.3f2a1c.css): el navegador nunca usa una versión vieja.
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
 
 
 # =====================================================

@@ -24,7 +24,10 @@
 <div class="container py-4">
   <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
     <h1 class="h3 fw-bold mb-0" style="color:var(--tc-primario)"><i class="bi bi-truck me-2"></i>Entregas</h1>
-    <div class="small text-muted">Entregados hoy: <strong>{{ entregados_hoy }}</strong></div>
+    <div class="d-flex align-items-center gap-3">
+      <div class="small text-muted">Entregados hoy: <strong>{{ entregados_hoy }}</strong></div>
+      <a class="btn btn-outline-secondary btn-sm rounded-pill" href="{{ url_excel }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Descargar Excel</a>
+    </div>
   </div>
 
   <nav class="tc-pestanas" aria-label="Estado de las entregas">
@@ -70,7 +73,7 @@
     <div class="tc-chips mb-3" role="group" aria-label="Despacho">
       <a href="?vista=pendientes&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if not despacho %}activa{% endif %}">Todos</a>
       <a href="?vista=pendientes&despacho=por_despachar&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if despacho == 'por_despachar' %}activa{% endif %}">Por despachar</a>
-      <a href="?vista=pendientes&despacho=en_camino&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if despacho == 'en_camino' %}activa{% endif %}"><i class="bi bi-truck"></i> En camino ({{ total_en_camino }})</a>
+      <a href="?vista=pendientes&despacho=en_camino&q={{ busqueda|urlencode }}&fondo={{ fondo }}&finca={{ finca }}" class="tc-chip {% if despacho == 'en_camino' %}activa{% endif %}"><i class="bi bi-truck"></i> En camino / listos ({{ total_en_camino }})</a>
     </div>
 
     <form id="tc-form-despacho" method="post" action="{% url 'pedidos:entregas_despachar' %}" class="tc-barra-despacho">
@@ -80,7 +83,7 @@
         <input class="form-check-input m-0" type="checkbox" id="tc-sel-todos"> Seleccionar todos
       </label>
       <button class="btn btn-tio btn-sm rounded-pill" type="submit" id="tc-btn-despachar" disabled>
-        <i class="bi bi-truck me-1"></i>Marcar como despachados (<span id="tc-num-sel">0</span>)
+        <i class="bi bi-truck me-1"></i>Despachar / listo para recoger (<span id="tc-num-sel">0</span>)
       </button>
     </form>
   {% endif %}
@@ -94,7 +97,7 @@
             <strong>{{ pedido.numero }}</strong>
             <div>Recibió: {{ pedido.entrega.recibido_por }}</div>
             <div class="small text-muted"><i class="bi bi-geo-alt"></i>
-              {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}{% endif %}
+              {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.lugar_entrega }}{% endif %}
             </div>
           </div>
           <div class="text-end small">
@@ -108,7 +111,7 @@
     {% else %}
       <div class="tc-fila-pedido d-flex align-items-start gap-3">
         {% if pedido.despachado_en %}
-          <i class="bi bi-truck fs-5 mt-1" style="color:var(--tc-primario)" title="En camino"></i>
+          <i class="bi bi-{% if pedido.recoge_en_tienda %}shop{% else %}truck{% endif %} fs-5 mt-1" style="color:var(--tc-primario)" title="{{ pedido.texto_despacho }}"></i>
         {% else %}
           <input class="form-check-input mt-1 tc-sel-pedido" type="checkbox" name="pedidos" value="{{ pedido.id }}" form="tc-form-despacho" aria-label="Seleccionar {{ pedido.numero }}">
         {% endif %}
@@ -116,10 +119,11 @@
         <div class="d-flex justify-content-between align-items-start gap-2">
           <div>
             <strong>{{ pedido.numero }}</strong>
-            {% if pedido.despachado_en %}<span class="badge rounded-pill text-bg-info ms-1"><i class="bi bi-truck"></i> En camino · {{ pedido.despachado_en|date:"d/m H:i" }}</span>{% endif %}
+            {% if pedido.despachado_en %}<span class="badge rounded-pill text-bg-info ms-1"><i class="bi bi-truck"></i> {{ pedido.texto_despacho }} · {{ pedido.despachado_en|date:"d/m H:i" }}</span>{% endif %}
+            {% if pedido.recoge_en_tienda %}<span class="badge rounded-pill text-bg-warning ms-1"><i class="bi bi-shop"></i> Recoge en tienda</span>{% endif %}
             <div>{% if solicitud %}{{ solicitud.nombre_completo }}{% else %}{{ pedido.nombre_cliente }}{% endif %}</div>
             <div class="small text-muted"><i class="bi bi-geo-alt"></i>
-              {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.direccion_entrega }}{% if pedido.ciudad %}, {{ pedido.ciudad }}{% endif %}{% endif %}
+              {% if solicitud.finca %}{{ solicitud.finca }} · {{ solicitud.fondo.nombre }}{% else %}{{ pedido.lugar_entrega }}{% endif %}
             </div>
           </div>
           <div class="text-end">
@@ -174,7 +178,7 @@
     casillas.forEach(function (c) { c.addEventListener("change", actualizar); });
     document.getElementById("tc-form-despacho").addEventListener("submit", function (e) {
       var n = contador.textContent;
-      if (!confirm("¿Marcar " + n + " pedido(s) como despachados? Se avisará a cada cliente que su pedido va en camino.")) {
+      if (!confirm("¿Marcar " + n + " pedido(s) como despachados? Se avisará a cada cliente que su pedido va en camino (o que está listo para recoger, si recoge en tienda).")) {
         e.preventDefault();
       }
     });

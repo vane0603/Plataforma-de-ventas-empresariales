@@ -1,0 +1,125 @@
+{% extends "layouts/base.html" %}
+{% block title %}Exportar a Siigo · Tío Campo{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <a href="{% url 'pedidos:reporte' %}" class="d-inline-block mb-3">&larr; Reporte de pedidos</a>
+  <h1 class="h3 fw-bold mb-3" style="color:var(--tc-primario)"><i class="bi bi-file-earmark-arrow-up me-2"></i>Exportar facturas a Siigo</h1>
+
+  {% if not configuraciones %}
+    <div class="alert alert-info">
+      Ningún fondo tiene activada la exportación a Siigo. Actívala en
+      <strong>admin → Fondos de empleados → (el fondo) → Exportación a Siigo</strong>.
+    </div>
+  {% else %}
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label small mb-1" for="fondo">Fondo</label>
+        <select id="fondo" name="fondo" class="form-select">
+          {% for c in configuraciones %}<option value="{{ c.pk }}" {% if c.pk == config.pk %}selected{% endif %}>{{ c.fondo.nombre }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label small mb-1" for="desde">Aprobados desde</label>
+        <input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}" class="form-control">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label small mb-1" for="hasta">Hasta</label>
+        <input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}" class="form-control">
+      </div>
+      <div class="col-12 col-md-2 d-flex align-items-end"><button class="btn btn-outline-secondary w-100" type="submit">Ver</button></div>
+    </form>
+
+    {% if config.fondo.descuento_empleados == 0 %}
+      <div class="alert alert-info small">
+        {{ config.fondo.nombre }} tiene el <strong>descuento para empleados en 0 %</strong>, así que las facturas salen sin la
+        fila de descuento. Para el 15 % ve a <strong>admin → Fondos de empleados → {{ config.fondo.nombre }}</strong>.
+      </div>
+    {% endif %}
+
+    <form method="post" class="product-card p-4 mb-3">
+      {% csrf_token %}
+      <input type="hidden" name="fondo" value="{{ config.pk }}">
+      <input type="hidden" name="desde" value="{{ desde|date:'Y-m-d' }}">
+      <input type="hidden" name="hasta" value="{{ hasta|date:'Y-m-d' }}">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+        <div>
+          <h2 class="h5 fw-bold mb-1">Pedidos aprobados: {{ revision.pedidos|length }}</h2>
+          <p class="small text-muted mb-0">Marca los que quieres descargar. Puedes repetir la descarga las veces que necesites.</p>
+        </div>
+        {% if puede_generar and revision.pedidos %}
+          <div class="d-flex flex-wrap align-items-end gap-2">
+            <div>
+              <label class="form-label small mb-1" for="numero_inicial">Número de factura inicial ({{ config.comprobante }})</label>
+              <input type="number" min="1" required id="numero_inicial" name="numero_inicial" value="{{ config.siguiente_numero }}" class="form-control">
+            </div>
+            <button class="btn btn-tio" type="submit" id="tc-descargar"><i class="bi bi-download me-1"></i>Descargar <span id="tc-num-sel">{{ revision.pedidos|length }}</span> factura(s)</button>
+          </div>
+        {% endif %}
+      </div>
+      {% if revision.pedidos %}
+        <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th style="width:2rem"><input class="form-check-input" type="checkbox" id="tc-sel-todos" checked aria-label="Marcar todos"></th>
+            <th>Pedido</th><th>Aprobado</th><th>Empleado</th><th class="text-end">Descuento</th><th class="text-end">Total</th><th>Última factura</th>
+          </tr></thead>
+          <tbody>{% for pedido in revision.pedidos %}
+            <tr>
+              <td><input class="form-check-input tc-sel" type="checkbox" name="pedidos" value="{{ pedido.pk }}" checked aria-label="Marcar {{ pedido.numero }}"></td>
+              <td class="text-nowrap">{{ pedido.numero }}</td>
+              <td class="text-nowrap">{{ pedido.solicitud_nomina.fecha_respuesta|date:"d/m/Y H:i" }}</td>
+              <td>{{ pedido.solicitud_nomina.nombre_completo }}</td>
+              <td class="text-end">{% if pedido.descuento %}${{ pedido.descuento|floatformat:"0g" }}{% else %}—{% endif %}</td>
+              <td class="text-end">${{ pedido.total|floatformat:"0g" }}</td>
+              <td class="text-nowrap">{% if pedido.siigo_numero %}{{ config.comprobante }} {{ pedido.siigo_numero }}{% else %}<span class="text-muted">Sin descargar</span>{% endif %}</td>
+            </tr>
+          {% endfor %}</tbody>
+        </table></div>
+        <p class="small text-muted mt-2 mb-0">Los marcados se numeran en el orden de la tabla desde el número inicial. Revisa en Siigo el consecutivo antes de descargar.</p>
+      {% else %}
+        <p class="small text-muted mb-0">No hay pedidos aprobados de {{ config.fondo.nombre }} en esas fechas.</p>
+      {% endif %}
+    </form>
+
+    {% if revision.lineas_sin_cuenta %}
+      <div class="alert alert-info small">
+        Estas líneas-grupo no están en <strong>admin → Cuentas de venta por línea Siigo</strong> y usan la cuenta de ingresos por defecto del fondo:
+        <strong>{{ revision.lineas_sin_cuenta|join:", " }}</strong>.
+      </div>
+    {% endif %}
+
+    {% if revision.problemas %}
+      <div class="alert alert-warning">
+        <strong>{{ revision.problemas|length }} pedido(s) no se pueden exportar todavía:</strong>
+        <ul class="mb-1 mt-2">
+          {% for pedido, problemas in revision.problemas %}<li>{{ pedido.numero }}: {{ problemas|join:"; " }}.</li>{% endfor %}
+        </ul>
+        <span class="small">Escribe el código Siigo en <strong>admin → Presentaciones de productos</strong> (o en el combo) y vuelve a cargar esta página.</span>
+      </div>
+    {% endif %}
+    <p class="small text-muted mt-3"><i class="bi bi-shield-lock me-1"></i>El archivo tiene nombres y documentos de los empleados: guárdalo en un lugar seguro (Ley 1581 de 2012).</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+  // Marcar todos / contar los marcados.
+  (function () {
+    const todos = document.getElementById("tc-sel-todos");
+    const casillas = Array.from(document.querySelectorAll(".tc-sel"));
+    const contador = document.getElementById("tc-num-sel");
+    const boton = document.getElementById("tc-descargar");
+    if (!todos) return;
+    function actualizar() {
+      const n = casillas.filter((c) => c.checked).length;
+      if (contador) contador.textContent = n;
+      if (boton) boton.disabled = n === 0;
+      todos.checked = n === casillas.length;
+      todos.indeterminate = n > 0 && n < casillas.length;
+    }
+    todos.addEventListener("change", () => { casillas.forEach((c) => { c.checked = todos.checked; }); actualizar(); });
+    casillas.forEach((c) => c.addEventListener("change", actualizar));
+    actualizar();
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Inicio</a> &rsaquo;
+  <a href="{% url 'admin:fondos_cuentalineasiigo_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo; Importar
+</div>
+{% endblock %}
+{% block content %}
+<p>Sube el Excel de líneas de Siigo. Se usan las columnas <b>LINEA</b>, <b>GRUPO</b>, <b>CTA VENTA</b> y
+  <b>NOMBRE LINEA</b>; las demás se ignoran.
+  Puede tener filas de título arriba. Las líneas que ya existen se actualizan.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Importar" class="default">
+</form>
+{% endblock %}

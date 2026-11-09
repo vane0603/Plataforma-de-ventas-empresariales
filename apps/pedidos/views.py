@@ -13,14 +13,14 @@ from apps.pagos.services import pedido_pagable_en_linea
 
 from .acceso import pedido_accesible, recordar_pedido
 from .forms import CheckoutForm
-from .models import Pedido
+from .models import Pedido, PuntoRecogida
 from .services import PedidoError, cancelar_pedido, crear_pedido_desde_carrito, definir_pago_saldo
 
 # Datos que el invitado ya escribió, para no perderlos si debe iniciar sesión (nómina).
 SESSION_BORRADOR = "checkout_borrador"
 CAMPOS_BORRADOR = (
     "nombre", "correo", "telefono", "direccion_entrega", "departamento", "ciudad", "observaciones", "metodo_pago",
-    "avisos_whatsapp",
+    "avisos_whatsapp", "tipo_entrega", "punto_recogida",
 )
 
 
@@ -84,6 +84,7 @@ def checkout(request):
                     contacto=form.datos_contacto(),
                     autoriza_datos=form.cleaned_data["autoriza_tratamiento"],
                     avisos_whatsapp=whatsapp_activo and form.cleaned_data["avisos_whatsapp"],
+                    punto_recogida=form.cleaned_data["punto_recogida"] if form.recoge_en_tienda else None,
                 )
             except PedidoError as exc:
                 messages.error(request, str(exc))
@@ -117,6 +118,7 @@ def checkout(request):
             "total": carrito.total,
             "metodos": Pedido.METODOS_PAGO,
             "whatsapp_activo": whatsapp_activo,
+            "puntos_recogida": PuntoRecogida.objects.filter(activo=True),
             "departamentos": departamentos,
             "departamento_sel": departamento_sel,
             "municipio_sel": municipio_sel,

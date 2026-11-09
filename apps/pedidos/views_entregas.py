@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -22,6 +22,7 @@ from .entregas import (
     registrar_entrega,
 )
 from .models import Pedido
+from .reportes import TIPO_XLSX, generar_xlsx
 
 PERMISO = "pedidos.registrar_entrega"
 
@@ -77,11 +78,22 @@ def entregas_lista(request):
             pedidos = pedidos.filter(despachado_en__isnull=False)
         pedidos = pedidos.order_by("solicitud_nomina__finca__nombre", "created_at")
 
-    pedidos = pedidos.select_related("usuario", "solicitud_nomina__fondo", "solicitud_nomina__finca")
+    pedidos = pedidos.select_related("usuario", "punto_recogida", "solicitud_nomina__fondo", "solicitud_nomina__finca")
+
+    # El mismo listado (con sus filtros) en Excel.
+    if request.GET.get("formato") == "xlsx":
+        respuesta = HttpResponse(generar_xlsx(pedidos), content_type=TIPO_XLSX)
+        respuesta["Content-Disposition"] = f'attachment; filename="entregas_{vista}_{timezone.localdate()}.xlsx"'
+        return respuesta
+    parametros = request.GET.copy()
+    parametros.pop("page", None)
+    parametros["formato"] = "xlsx"
+
     pagina = Paginator(pedidos, 30).get_page(request.GET.get("page"))
 
     return render(request, "pedidos/entregas_lista.html", {
         "vista": vista,
+        "url_excel": "?" + parametros.urlencode(),
         "pedidos": pagina,
         "pagina": pagina,
         "busqueda": busqueda,

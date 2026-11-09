@@ -4,7 +4,7 @@ from django import forms
 
 from apps.core import municipios
 
-from .models import Pedido
+from .models import Pedido, PuntoRecogida
 
 
 class CheckoutForm(forms.Form):
@@ -24,6 +24,12 @@ class CheckoutForm(forms.Form):
     ciudad = forms.CharField(label="Municipio", max_length=120, required=False,
                              initial=municipios.MUNICIPIO_POR_DEFECTO)
     observaciones = forms.CharField(label="Observaciones", required=False, widget=forms.Textarea)
+    tipo_entrega = forms.ChoiceField(label="Tipo de entrega", choices=Pedido.TIPOS_ENTREGA, required=False,
+                                     initial=Pedido.TIPO_DOMICILIO)
+    punto_recogida = forms.ModelChoiceField(
+        label="Punto de recogida", queryset=PuntoRecogida.objects.filter(activo=True), required=False,
+        error_messages={"invalid_choice": "Selecciona un punto de recogida válido."},
+    )
     # Obligatoria para invitados (los usuarios autorizaron al crear su cuenta).
     autoriza_tratamiento = forms.BooleanField(label="Autorizo el tratamiento de mis datos", required=False)
     # Opcional: solo se muestra si WhatsApp está activo. Requiere celular.
@@ -52,9 +58,20 @@ class CheckoutForm(forms.Form):
             raise forms.ValidationError("Escribe un número de celular válido.")
         return telefono
 
+    @property
+    def recoge_en_tienda(self):
+        return (self.cleaned_data.get("tipo_entrega") == Pedido.TIPO_TIENDA
+                and self.cleaned_data.get("metodo_pago") != Pedido.METODO_NOMINA)
+
     def clean(self):
         datos = super().clean()
-        if datos.get("metodo_pago") and datos.get("metodo_pago") != Pedido.METODO_NOMINA:
+        # Con nómina siempre se entrega en la finca.
+        if datos.get("metodo_pago") == Pedido.METODO_NOMINA or not datos.get("tipo_entrega"):
+            datos["tipo_entrega"] = Pedido.TIPO_DOMICILIO
+        if datos["tipo_entrega"] == Pedido.TIPO_TIENDA:
+            if not datos.get("punto_recogida") and "punto_recogida" not in self.errors:
+                self.add_error("punto_recogida", "Selecciona dónde quieres recoger tu pedido.")
+        elif datos.get("metodo_pago") and datos.get("metodo_pago") != Pedido.METODO_NOMINA:
             if not datos.get("direccion_entrega", "").strip():
                 self.add_error("direccion_entrega", "Escribe la dirección de entrega.")
             if not datos.get("ciudad", "").strip():

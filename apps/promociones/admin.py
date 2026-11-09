@@ -75,6 +75,16 @@ class ComboAdmin(admin.ModelAdmin):
         ),
 
         (
+            "Siigo",
+            {
+                "fields": (
+                    "codigo_siigo",
+                    "bodega_siigo",
+                )
+            },
+        ),
+
+        (
             "Estado y visualización",
             {
                 "fields": (

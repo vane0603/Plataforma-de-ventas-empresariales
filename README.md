@@ -128,6 +128,11 @@ static/         CSS y JavaScript de la tienda
 - La política de datos (`/politica-de-datos/`) es una plantilla: debe revisarla el área jurídica.
 
 ## Despliegue
-Servidor Linux con Nginx + Gunicorn + MySQL (o PostgreSQL) + HTTPS (Let's Encrypt). Con `DEBUG=0` la
-aplicación exige `DJANGO_SECRET_KEY` y las claves de cifrado. Incluya `privado/` y la base de
-datos en las copias de seguridad.
+**Servidor Windows (actual):** Waitress + WhiteNoise + MySQL, publicado con HTTPS por Tailscale Funnel
+(sin abrir puertos). Scripts y guía en [`despliegue/windows/`](despliegue/windows/LEEME.md):
+`instalar.ps1` (una vez), `actualizar.ps1` (cada versión nueva), `respaldo.ps1` (diario, automático).
+
+**Servidor Linux (alternativa):** Nginx + Gunicorn + MySQL (o PostgreSQL) + HTTPS (Let's Encrypt).
+
+Con `DEBUG=0` la aplicación exige `DJANGO_SECRET_KEY` y las claves de cifrado. Incluya `privado/` y la
+base de datos en las copias de seguridad.

@@ -26,6 +26,7 @@ from .services import (
     SolicitudError,
     aplicar_decision,
     crear_solicitud,
+    descuento_pedido,
     importar_padron,
 )
 
@@ -102,10 +103,17 @@ def solicitar_descuento_nomina(request, pedido_id):
     else:
         form = SolicitudDescuentoNominaForm(initial=initial)
 
+    # Descuento para empleados de cada fondo, para mostrarlo al elegir el fondo.
+    items = list(pedido.items.all())
+    descuentos = {
+        str(fondo.id): {"porcentaje": f"{fondo.descuento_empleados.normalize():f}", "valor": int(descuento_pedido(items, fondo.descuento_empleados))}
+        for fondo in form.fields["fondo"].queryset
+        if fondo.descuento_empleados > 0
+    }
     return render(
         request,
         "fondos/solicitud_nomina.html",
-        {"form": form, "pedido": pedido, "total": pedido.total},
+        {"form": form, "pedido": pedido, "total": pedido.total, "descuentos_fondos": descuentos},
     )
 
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, views_entregas
+from . import views, views_entregas, views_reportes, views_siigo
 
 app_name = "pedidos"
 
@@ -10,6 +10,8 @@ urlpatterns = [
     path("<int:pedido_id>/cancelar/", views.cancelar, name="cancelar"),
     path("seguimiento/<uuid:codigo>/", views.seguimiento, name="seguimiento"),
     path("mis-pedidos/", views.mis_pedidos, name="mis_pedidos"),
+    path("reporte/", views_reportes.reporte_pedidos, name="reporte"),
+    path("reporte/siigo/", views_siigo.exportar_siigo, name="siigo"),
 
     # Entregas (repartidores)
     path("entregas/", views_entregas.entregas_lista, name="entregas"),

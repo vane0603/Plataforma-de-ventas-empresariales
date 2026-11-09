@@ -1,5 +1,7 @@
 from django.db import models
 
+from apps.core.siigo import AYUDA_BODEGA, AYUDA_CODIGO, validar_codigo_siigo
+
 
 class Combo(models.Model):
 
@@ -58,6 +60,21 @@ class Combo(models.Model):
     orden = models.PositiveIntegerField(
         default=0,
         verbose_name="Orden",
+    )
+
+    codigo_siigo = models.CharField(
+        "código Siigo",
+        max_length=20,
+        blank=True,
+        validators=[validar_codigo_siigo],
+        help_text=AYUDA_CODIGO,
+    )
+
+    bodega_siigo = models.PositiveIntegerField(
+        "bodega Siigo",
+        null=True,
+        blank=True,
+        help_text=AYUDA_BODEGA,
     )
 
     created_at = models.DateTimeField(

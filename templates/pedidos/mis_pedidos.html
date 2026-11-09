@@ -3,12 +3,19 @@
 {% block content %}
 <section class="py-5"><div class="container">
   <h1 class="section-title mb-4">Mis pedidos</h1>
+  {% if pedidos %}
+    <div class="row d-none d-md-flex px-4 mb-2 small text-muted fw-semibold">
+      <div class="col-md-4">Pedido</div><div class="col-md-4">Estado</div><div class="col-md-2 text-end">Total</div><div class="col-md-2"></div>
+    </div>
+  {% endif %}
   {% for pedido in pedidos %}
-    <div class="product-card p-4 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <div><strong>{{ pedido.numero }}</strong><div class="text-muted small">{{ pedido.created_at|date:"d/m/Y H:i" }} · {{ pedido.get_metodo_pago_display }}</div></div>
-      <div><span class="badge text-bg-secondary">{{ pedido.get_estado_display }}</span>{% if pedido.en_camino %} <span class="badge text-bg-info"><i class="bi bi-truck"></i> En camino</span>{% endif %}</div>
-      <div class="price">${{ pedido.total|floatformat:0 }}</div>
-      <a class="btn btn-outline-secondary" href="{% url 'pedidos:confirmacion' pedido.id %}">Ver</a>
+    <div class="product-card px-4 py-3 mb-3">
+      <div class="row align-items-center g-2">
+        <div class="col-12 col-md-4"><strong>{{ pedido.numero }}</strong><div class="text-muted small">{{ pedido.created_at|date:"d/m/Y H:i" }} · {{ pedido.get_metodo_pago_display }}{% if pedido.recoge_en_tienda %} · <i class="bi bi-shop"></i> Recoger en tienda{% endif %}</div></div>
+        <div class="col-7 col-md-4"><span class="badge {{ pedido.clase_estado }}">{{ pedido.get_estado_display }}</span>{% if pedido.en_camino %} <span class="badge text-bg-info"><i class="bi bi-truck"></i> {{ pedido.texto_despacho }}</span>{% endif %}</div>
+        <div class="col-5 col-md-2 text-end"><span class="price">${{ pedido.total|floatformat:"0g" }}</span></div>
+        <div class="col-12 col-md-2 text-md-end"><a class="btn btn-outline-secondary" href="{% url 'pedidos:confirmacion' pedido.id %}">Ver</a></div>
+      </div>
     </div>
   {% empty %}<div class="alert alert-info">Aún no tienes pedidos.</div>{% endfor %}
 </div></section>
